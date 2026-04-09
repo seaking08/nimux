@@ -47,7 +47,6 @@ class FaceProcessingAnalyzer @Inject constructor(
                     )
                 }
 
-                // ✅ Rotation weitergeben!
                 onFacesUpdated?.invoke(
                     validFaces,
                     imageProxy.width,
