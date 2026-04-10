@@ -75,6 +75,7 @@
                     android:layout_marginTop="@dimen/group_margin"
                     android:hint="@string/password"
                     android:importantForAutofill="no"
+                    app:endIconMode="password_toggle"
                     app:errorEnabled="true"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/login_fragment_email_input">
@@ -120,14 +121,14 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="start"
-                            android:text="Datenschutzhinweis"
+                            android:text="@string/privacy_notice_title"
                             android:textSize="15dp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Zur Anmeldung wird Firebase Authentication verwendet. Dabei können Ihre E-Mail-Adresse sowie technische Informationen wie IP-Adresse und Zeitpunkte von Anmeldeversuchen verarbeitet werden.\n\n Weitere Informationen finden Sie in der Datenschutzerklärung."
+                            android:text="@string/privacy_notice"
                             android:textSize="16sp" />
 
                         <com.google.android.material.button.MaterialButton
@@ -140,7 +141,7 @@
                             android:minHeight="48dp"
                             android:paddingTop="4dp"
                             android:paddingBottom="4dp"
-                            android:text="Datenschutzerklärung"
+                            android:text="@string/privacy_policy"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="12sp" />
 

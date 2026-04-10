@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Nimux</string>
+    <string name="app_name">NIMux</string>
     <string name="menu_home">Buchen</string>
     <string name="statistics">Statistik</string>
     <string name="manage_users">Personen verwalten</string>
@@ -356,4 +356,9 @@
     <string name="error_displaying_qr">Fehler beim Anzeigen des QR Codes</string>
     <string name="no_pin_set_overview_toast">Keine PIN festgelegt. Du kannst deine Einstellungen nur mit Hilfe eines Admins über das Admin Panel anpassen</string>
     <string name="no_admin_toast">Auf diese Funktion kann nur von Administrator-Accounts zugegriffen werden</string>
+    <string name="privacy_notice">Zur Anmeldung wird Firebase Authentication verwendet. Dabei können Ihre E-Mail-Adresse sowie technische Informationen wie IP-Adresse und Zeitpunkte von Anmeldeversuchen verarbeitet werden.\n\n Weitere Informationen finden Sie in der Datenschutzerklärung.</string>
+    <string name="privacy_notice_title">Datenschutzhinweis</string>
+    <string name="privacy_policy">Datenschutzerklärung</string>
+    <string name="system_color">Systemfarbe</string>
+    <string name="changelog"> Version NO NAME (3.1.0 ?)\n- Fehler behoben, welcher zum Abstürzen der App während dem Gesichtsscann führte\n- Fehler behoben, welcher unpassende Boxen zum Gesicht zeigte\n- LogIn Design verändert\n- Changelog hinzugefügt\n- Verschiedene Systemfarben hinzugefügt</string>
 </resources>

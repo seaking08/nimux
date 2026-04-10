@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,7 @@ import de.muenchen.appcenter.nimux.util.LogInLogOutLog
 import de.muenchen.appcenter.nimux.util.UserSessionManager
 import de.muenchen.appcenter.nimux.util.faceRecognitionPrefKey
 import de.muenchen.appcenter.nimux.util.standbyBoolPrefKey
+import de.muenchen.appcenter.nimux.util.systemColorPrefKey // <-- NEU
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -60,8 +62,10 @@ class SettingsFragment : Fragment() {
         binding.settingsBuildNumber.text = "App Version " + BuildConfig.VERSION_NAME
         binding.settingsAccountLoggedIn.text =
             "Eingeloggt als " + userSessionManager.getUserEMail() + " mit Rolle " + userSessionManager.getRole() + " und Daten aus Tenant: " + userSessionManager.getTenantId()
+
         setClickListeners()
         getSavedData()
+        setupColorSelection() // <-- NEU: Initialisierung der Farbauswahl
     }
 
     private fun setClickListeners() {
@@ -131,5 +135,60 @@ class SettingsFragment : Fragment() {
                 apply()
             }
         }
+    }
+
+    private fun setupColorSelection() {
+        val savedColor = sharedPrefs.getString(systemColorPrefKey, "blue") ?: "blue"
+        updateColorSelectionUI(savedColor)
+
+        // Click Listener für die einzelnen Farben setzen
+        binding.colorOptionBlue.setOnClickListener { selectColor("blue") }
+        binding.colorOptionRed.setOnClickListener { selectColor("red") }
+        binding.colorOptionGreen.setOnClickListener { selectColor("green") }
+        binding.colorOptionOrange.setOnClickListener { selectColor("orange") }
+        binding.colorOptionPurple.setOnClickListener { selectColor("purple") }
+    }
+
+    private fun selectColor(colorName: String) {
+        with(sharedPrefs.edit()) {
+            putString(systemColorPrefKey, colorName)
+            apply()
+        }
+
+        val intent = Intent(requireContext(), MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+
+        intent.putExtra("OPEN_SETTINGS", true)
+        requireActivity().finish()
+        startActivity(intent)
+    }
+
+    private fun updateColorSelectionUI(selectedColor: String) {
+        //calculate radius
+        val strokeWidthActive = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            3f,
+            resources.displayMetrics
+        ).toInt()
+        val strokeWidthInactive = 0
+
+        binding.colorOptionBlue.strokeWidth = strokeWidthInactive
+        binding.colorOptionRed.strokeWidth = strokeWidthInactive
+        binding.colorOptionGreen.strokeWidth = strokeWidthInactive
+        binding.colorOptionOrange.strokeWidth = strokeWidthInactive
+        binding.colorOptionPurple.strokeWidth = strokeWidthInactive
+
+        when (selectedColor) {
+            "blue" -> binding.colorOptionBlue.strokeWidth = strokeWidthActive
+            "red" -> binding.colorOptionRed.strokeWidth = strokeWidthActive
+            "green" -> binding.colorOptionGreen.strokeWidth = strokeWidthActive
+            "orange" -> binding.colorOptionOrange.strokeWidth = strokeWidthActive
+            "purple" -> binding.colorOptionPurple.strokeWidth = strokeWidthActive
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
