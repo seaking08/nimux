@@ -1,6 +1,7 @@
 package de.muenchen.appcenter.nimux.view.main.home
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -15,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.face.FaceDetector
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
@@ -121,8 +123,26 @@ class FaceReconFragment : Fragment() {
 
     private fun startCamera() {
 
-        analyzer.onFacesUpdated = { faces, w, h , rotation->
+        var warningShown = false
+        analyzer.onFacesUpdated = { faces, w, h, rotation ->
             _binding?.overlay?.setFaces(faces, w, h, rotation, true)
+            if (faces.size > 1 && !warningShown) {
+                warningShown = true
+                cameraController.stopCamera()
+                requireActivity().runOnUiThread {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.face_detection_warning))
+                        .setMessage(getString(R.string.face_detection_warning_text))
+                        .setPositiveButton("OK") { _, _ ->
+                            warningShown = false; cameraController.startCamera(
+                            viewLifecycleOwner,
+                            binding.previewView,
+                            analyzer
+                        )
+                        }
+                        .show()
+                }
+            }
         }
 
         analyzer.onFaceCropped = onFaceCropped@{ faceBitmap ->

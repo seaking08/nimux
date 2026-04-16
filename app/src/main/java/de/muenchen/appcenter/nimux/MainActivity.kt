@@ -175,98 +175,99 @@ class MainActivity : AppCompatActivity() {
                         .getBoolean(faceRecognitionPrefKey, false)
                 ) {
                     navGraph.setStartDestination(R.id.nav_home_auto)
-                } else navGraph.setStartDestination(R.id.nav_home_manual)}
+                } else navGraph.setStartDestination(R.id.nav_home_manual)
+            }
 
-                navController.graph = navGraph
+            navController.graph = navGraph
 
-                appBarConfiguration = AppBarConfiguration(
-                    setOf(
-                        R.id.nav_home_auto,
-                        R.id.nav_home_manual,
-                        R.id.nav_overview,
-                        R.id.nav_statistics,
-                        R.id.nav_user_store,
-                        R.id.nav_manage_stuff,
-                        R.id.nav_suggest_users
-                    )
+            appBarConfiguration = AppBarConfiguration(
+                setOf(
+                    R.id.nav_home_auto,
+                    R.id.nav_home_manual,
+                    R.id.nav_overview,
+                    R.id.nav_statistics,
+                    R.id.nav_user_store,
+                    R.id.nav_manage_stuff,
+                    R.id.nav_suggest_users
                 )
+            )
 
-                setupActionBarWithNavController(navController, appBarConfiguration)
+            setupActionBarWithNavController(navController, appBarConfiguration)
 
-                val navRail = findViewById<NavigationRailView>(R.id.nav_view)
-                navRail.setOnItemSelectedListener { menuItem ->
-                    val navBuilder = NavOptions.Builder()
-                    val options = navBuilder.setPopUpTo(
-                        navController.graph.id,
-                        inclusive = true,
-                        saveState = false
-                    ).build()
-                    when (menuItem.itemId) {
-                        R.id.nav_home -> {
+            val navRail = findViewById<NavigationRailView>(R.id.nav_view)
+            navRail.setOnItemSelectedListener { menuItem ->
+                val navBuilder = NavOptions.Builder()
+                val options = navBuilder.setPopUpTo(
+                    navController.graph.id,
+                    inclusive = true,
+                    saveState = false
+                ).build()
+                when (menuItem.itemId) {
+                    R.id.nav_home -> {
 
-                            val sharedPref =
-                                PreferenceManager.getDefaultSharedPreferences(this)
+                        val sharedPref =
+                            PreferenceManager.getDefaultSharedPreferences(this)
 
-                            val faceRecognitionEnabled =
-                                sharedPref.getBoolean(faceRecognitionPrefKey, false)
+                        val faceRecognitionEnabled =
+                            sharedPref.getBoolean(faceRecognitionPrefKey, false)
 
-                            val destination = if (faceRecognitionEnabled) {
-                                R.id.nav_home_auto
-                            } else {
-                                R.id.nav_home_manual
-                            }
-
-                            if (navController.currentDestination?.id != destination) {
-                                navController.navigate(destination, null, options)
-                            }
+                        val destination = if (faceRecognitionEnabled) {
+                            R.id.nav_home_auto
+                        } else {
+                            R.id.nav_home_manual
                         }
 
-                        R.id.nav_overview -> {
-                            navController.navigate(R.id.nav_overview, null, options)
-                        }
-
-                        R.id.nav_statistics -> {
-                            navController.navigate(R.id.nav_statistics, null, options)
-                        }
-
-                        R.id.nav_manage_stuff -> {
-                            navController.navigate(R.id.nav_manage_stuff, null, options)
-                        }
-
-                        R.id.nav_settings -> {
-                            navController.navigate(R.id.nav_settings)
-                        }
-
-                        R.id.nav_user_store -> {
-                            navController.navigate(R.id.nav_user_store, null, options)
-                        }
-
-                        R.id.nav_suggest_users -> {
-                            navController.navigate(R.id.nav_suggest_users, null, options)
+                        if (navController.currentDestination?.id != destination) {
+                            navController.navigate(destination, null, options)
                         }
                     }
-                    true
-                }
 
-                navController.addOnDestinationChangedListener { _, destination, _ ->
-                    if (destination.id == R.id.nav_home_auto)
-                        navRail.menu[0].isChecked = true
-                    if (destination.id == R.id.nav_home_manual)
-                        navRail.menu[0].isChecked = true
-                    if (destination.id == R.id.nav_overview)
-                        navRail.menu[1].isChecked = true
-                    if (destination.id == R.id.nav_statistics)
-                        navRail.menu[2].isChecked = true
-                    if (destination.id == R.id.nav_user_store)
-                        navRail.menu[3].isChecked = true
-                    if (destination.id == R.id.nav_suggest_users)
-                        navRail.menu[4].isChecked = true
-                    if (destination.id == R.id.nav_manage_stuff)
-                        navRail.menu[5].isChecked = true
-                    if (destination.id == R.id.nav_settings)
-                        navRail.menu[6].isChecked = true
-                    timerRestart()
+                    R.id.nav_overview -> {
+                        navController.navigate(R.id.nav_overview, null, options)
+                    }
+
+                    R.id.nav_statistics -> {
+                        navController.navigate(R.id.nav_statistics, null, options)
+                    }
+
+                    R.id.nav_manage_stuff -> {
+                        navController.navigate(R.id.nav_manage_stuff, null, options)
+                    }
+
+                    R.id.nav_settings -> {
+                        navController.navigate(R.id.nav_settings)
+                    }
+
+                    R.id.nav_user_store -> {
+                        navController.navigate(R.id.nav_user_store, null, options)
+                    }
+
+                    R.id.nav_suggest_users -> {
+                        navController.navigate(R.id.nav_suggest_users, null, options)
+                    }
                 }
+                true
+            }
+
+            navController.addOnDestinationChangedListener { _, destination, _ ->
+                if (destination.id == R.id.nav_home_auto)
+                    navRail.menu[0].isChecked = true
+                if (destination.id == R.id.nav_home_manual)
+                    navRail.menu[0].isChecked = true
+                if (destination.id == R.id.nav_overview)
+                    navRail.menu[1].isChecked = true
+                if (destination.id == R.id.nav_statistics)
+                    navRail.menu[2].isChecked = true
+                if (destination.id == R.id.nav_user_store)
+                    navRail.menu[3].isChecked = true
+                if (destination.id == R.id.nav_suggest_users)
+                    navRail.menu[4].isChecked = true
+                if (destination.id == R.id.nav_manage_stuff)
+                    navRail.menu[5].isChecked = true
+                if (destination.id == R.id.nav_settings)
+                    navRail.menu[6].isChecked = true
+                timerRestart()
+            }
 
         } else {
             // smaller device

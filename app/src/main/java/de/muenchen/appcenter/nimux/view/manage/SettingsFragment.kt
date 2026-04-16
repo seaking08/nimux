@@ -29,6 +29,7 @@ import de.muenchen.appcenter.nimux.util.faceRecognitionPrefKey
 import de.muenchen.appcenter.nimux.util.standbyBoolPrefKey
 import de.muenchen.appcenter.nimux.util.systemColorPrefKey // <-- NEU
 import javax.inject.Inject
+import androidx.core.content.edit
 
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
@@ -141,7 +142,6 @@ class SettingsFragment : Fragment() {
         val savedColor = sharedPrefs.getString(systemColorPrefKey, "blue") ?: "blue"
         updateColorSelectionUI(savedColor)
 
-        // Click Listener für die einzelnen Farben setzen
         binding.colorOptionBlue.setOnClickListener { selectColor("blue") }
         binding.colorOptionRed.setOnClickListener { selectColor("red") }
         binding.colorOptionGreen.setOnClickListener { selectColor("green") }
@@ -150,9 +150,8 @@ class SettingsFragment : Fragment() {
     }
 
     private fun selectColor(colorName: String) {
-        with(sharedPrefs.edit()) {
+        sharedPrefs.edit {
             putString(systemColorPrefKey, colorName)
-            apply()
         }
 
         val intent = Intent(requireContext(), MainActivity::class.java)

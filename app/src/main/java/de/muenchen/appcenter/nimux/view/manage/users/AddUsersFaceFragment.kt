@@ -10,8 +10,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.face.FaceDetector
 import dagger.hilt.android.AndroidEntryPoint
+import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentAddUsersFaceBinding
 import de.muenchen.appcenter.nimux.util.recognition.CameraController
 import de.muenchen.appcenter.nimux.util.recognition.FaceProcessingAnalyzer
@@ -97,13 +99,32 @@ class AddUsersFaceFragment : Fragment() {
     }
 
     private fun startCamera() {
-        analyzer.onFacesUpdated = { faces, w, h, rotation ->
-            // Safe call: Fragment könnte schon zerstört sein
-            _binding?.faceoverlay?.setFaces(faces, w, h, rotation, true)
-        }
+            var warningShown = false
+            analyzer.onFacesUpdated = { faces, w, h, rotation ->
+                _binding?.faceoverlay?.setFaces(faces, w, h, rotation, true)
+                if (faces.size > 1 && !warningShown) {
+                    warningShown = true
+                    cameraController.stopCamera()
+                    collectedEmbeddings.clear()
+                    _binding?.sampleCounter?.text =
+                        "Gesicht wird erfasst ${collectedEmbeddings.size} / $requiredSamples"
+                    requireActivity().runOnUiThread {
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle(getString(R.string.face_detection_warning))
+                            .setMessage(getString(R.string.face_detection_warning_text)+"\n"+getString(R.string.face_detection_warning_register))
+                            .setPositiveButton("OK") { _, _ ->
+                                warningShown = false; cameraController.startCamera(
+                                viewLifecycleOwner,
+                                binding.previewView,
+                                analyzer
+                            )
+                            }
+                            .show()
+                    }
+                }
+            }
 
         analyzer.onFaceCropped = { faceBitmap ->
-            // Safe call
             if (isAdded && _binding != null) {
                 registerFace(faceBitmap)
             }

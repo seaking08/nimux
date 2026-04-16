@@ -360,5 +360,8 @@
     <string name="privacy_notice_title">Datenschutzhinweis</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="system_color">Systemfarbe</string>
-    <string name="changelog"> Version NO NAME (3.1.0 ?)\n- Fehler behoben, welcher zum Abstürzen der App während dem Gesichtsscann führte\n- Fehler behoben, welcher unpassende Boxen zum Gesicht zeigte\n- LogIn Design verändert\n- Changelog hinzugefügt\n- Verschiedene Systemfarben hinzugefügt</string>
+    <string name="changelog"> Version NO NAME (3.1.0 ?)\n- Fehler behoben, welcher zum Abstürzen der App während dem Gesichtsscann führte\n- Fehler behoben, welcher unpassende Boxen zum Gesicht zeigte\n- LogIn Design verändert\n- Changelog hinzugefügt\n- Verschiedene Systemfarben hinzugefügt\n- Warnung wird bei mehreren Gesichtern angezeigt</string>
+    <string name="face_detection_warning">Gesichtserkennungswarnung</string>
+    <string name="face_detection_warning_text">Es wurden mehrere Gesichter erkannt. Sorgen Sie bitte dafür, dass sich nur ein Gesicht im Bild ist.</string>
+    <string name="face_detection_warning_register">Der Prozess der Gesichtsdatenhinzufügung wird neugesartet. Die bis jetzt gesammelten Gesichtsdaten werden gelöscht..</string>
 </resources>

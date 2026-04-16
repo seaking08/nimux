@@ -31,7 +31,6 @@ class CameraController(
 
             val preview = Preview.Builder()
                 .setTargetRotation(previewView.display.rotation)
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .build()
                 .also {
                     it.surfaceProvider = previewView.surfaceProvider
@@ -39,7 +38,6 @@ class CameraController(
 
             val imageAnalyzer = ImageAnalysis.Builder()
                 .setTargetRotation(previewView.display.rotation)
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setBackpressureStrategy(
                     ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
                 )

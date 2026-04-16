@@ -400,5 +400,8 @@
     <string name="privacy_notice_title">Privacy Notice</string>
     <string name="privacy_policy">privacy policy</string>
     <string name="system_color">System Color</string>
-    <string name="changelog"> Version NO NAME (3.1.0?)\n - Fixed a bug leading to crashing the app while creating face data\n - Fixed a bug causing the misfit of bounding box\n - Changed login design\n - Added changelog</string>
+    <string name="changelog"> Version NO NAME (3.1.0?)\n - Fixed a bug leading to crashing the app while creating face data\n - Fixed a bug causing the misfit of bounding box\n - Changed login design\n - Added changelog\n - If multiple faces are detected, a warning will be shown.</string>
+    <string name="face_detection_warning">Face Detection Warning</string>
+    <string name="face_detection_warning_text">More than one face was recognized. Please make sure that there is only one face in the image!</string>
+    <string name="face_detection_warning_register">The process of adding facial data will restart and all collected data will be deleted.</string>
 </resources>
