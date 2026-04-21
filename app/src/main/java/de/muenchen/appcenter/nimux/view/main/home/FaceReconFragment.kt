@@ -157,7 +157,7 @@ class FaceReconFragment : Fragment() {
 
             if (results.isNotEmpty()) {
                 val bestMatch = results[0]
-                val threshold = 0.6f
+                val threshold = 0.8f
 
                 if (bestMatch.distance < threshold) {
                     moveToProductFragment(bestMatch.title)

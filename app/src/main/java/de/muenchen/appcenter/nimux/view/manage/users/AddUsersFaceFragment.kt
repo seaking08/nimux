@@ -35,11 +35,11 @@ class AddUsersFaceFragment : Fragment() {
 
     private var cameraProvider: ProcessCameraProvider? = null
 
-    private val requiredSamples = 20
+    private val requiredSamples = 30
     private val collectedEmbeddings = mutableListOf<FloatArray>()
     private var isProcessing = false
     private var lastSampleTime = 0L
-    private val sampleDelay = 800L // 0.8s between samples
+    private val sampleDelay = 500L // 0.5s between samples
 
     @Inject lateinit var cameraController: CameraController
     @Inject lateinit var analyzer: FaceProcessingAnalyzer
@@ -161,11 +161,11 @@ class AddUsersFaceFragment : Fragment() {
             isProcessing = true
             cameraProvider?.unbindAll()
 
-            val averaged = averageEmbeddings(collectedEmbeddings)
-            val normalizedAveraged = normalizeEmbedding(averaged)
+            //val averaged = averageEmbeddings(collectedEmbeddings)
+            //val normalizedAveraged = normalizeEmbedding(averaged)
 
             val user = AddUsersFaceFragmentArgs.fromBundle(requireArguments()).currentUser
-            faceRegistry.registerUser(user.stringSortID, normalizedAveraged)
+            faceRegistry.registerUser(user.stringSortID, collectedEmbeddings)
 
             Timber.d("Embedding registered for UserID: ${user.stringSortID}")
 
