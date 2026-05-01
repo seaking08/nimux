@@ -167,16 +167,11 @@ class MainActivity : AppCompatActivity() {
             // 6.5inch device or bigger
             //val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
             val navGraph = navController.navInflater.inflate(R.navigation.mobile_navigation)
-            if (intent.getBooleanExtra("OPEN_SETTINGS", false)) {
-                navGraph.setStartDestination(R.id.nav_settings)
-                Timber.d("Started at navigation")
-            } else {
                 if (PreferenceManager.getDefaultSharedPreferences(this)
                         .getBoolean(faceRecognitionPrefKey, false)
                 ) {
                     navGraph.setStartDestination(R.id.nav_home_auto)
                 } else navGraph.setStartDestination(R.id.nav_home_manual)
-            }
 
             navController.graph = navGraph
 

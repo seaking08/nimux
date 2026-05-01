@@ -649,7 +649,8 @@ class HomeProductFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        productAdapter.stopListening()
+        if (::productAdapter.isInitialized) {
+        productAdapter.stopListening()}
 
     }
 
