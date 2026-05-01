@@ -278,12 +278,9 @@ class MainActivity : AppCompatActivity() {
             navController = navHostFragment.navController
             val navGraph = navController.navInflater.inflate(R.navigation.mobile_navigation)
 
-            if (intent.getBooleanExtra("OPEN_SETTINGS", false)) {
-                navGraph.setStartDestination(R.id.nav_settings)
-                Timber.d("Started at navigation")
-            } else {
-                navGraph.setStartDestination(R.id.suggUserPasswordFragment)
-            }
+
+            navGraph.setStartDestination(R.id.suggUserPasswordFragment)
+
 
             navController.graph = navGraph
 

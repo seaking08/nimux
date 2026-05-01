@@ -35,11 +35,11 @@ class AddUsersFaceFragment : Fragment() {
 
     private var cameraProvider: ProcessCameraProvider? = null
 
-    private val requiredSamples = 30
+    private val requiredSamples = 40
     private val collectedEmbeddings = mutableListOf<FloatArray>()
     private var isProcessing = false
     private var lastSampleTime = 0L
-    private val sampleDelay = 500L // 0.5s between samples
+    private val sampleDelay = 400L// 0.4s between samples 400L
 
     @Inject lateinit var cameraController: CameraController
     @Inject lateinit var analyzer: FaceProcessingAnalyzer
@@ -107,7 +107,7 @@ class AddUsersFaceFragment : Fragment() {
                     cameraController.stopCamera()
                     collectedEmbeddings.clear()
                     _binding?.sampleCounter?.text =
-                        "Gesicht wird erfasst ${collectedEmbeddings.size} / $requiredSamples"
+                        "${getString(R.string.getting_face)} ${collectedEmbeddings.size} / $requiredSamples"
                     requireActivity().runOnUiThread {
                         MaterialAlertDialogBuilder(requireContext())
                             .setTitle(getString(R.string.face_detection_warning))
@@ -153,7 +153,7 @@ class AddUsersFaceFragment : Fragment() {
         collectedEmbeddings.add(normalizedEmbedding)
 
         _binding?.sampleCounter?.text =
-            "Gesicht wird erfasst ${collectedEmbeddings.size} / $requiredSamples"
+            "${getString(R.string.getting_face)} ${collectedEmbeddings.size} / $requiredSamples"
 
         Timber.d("Sample ${collectedEmbeddings.size} collected, embedding normalized")
 

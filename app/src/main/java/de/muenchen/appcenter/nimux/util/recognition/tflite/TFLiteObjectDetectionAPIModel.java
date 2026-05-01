@@ -208,7 +208,7 @@ public class TFLiteObjectDetectionAPIModel
         for (Map.Entry<String, Recognition> entry : registered.entrySet()) {
             final String name = entry.getKey();
 
-            final float[][] knownEmbs = (float[][]) entry.getValue().getExtra();
+            final float[][] knownEmbs = entry.getValue().getExtra();
             Timber.i("Datalength: " + knownEmbs.length + " " + name);
 
             //saved faces

@@ -404,4 +404,5 @@
     <string name="face_detection_warning">Face Detection Warning</string>
     <string name="face_detection_warning_text">More than one face was recognized. Please make sure that there is only one face in the image!</string>
     <string name="face_detection_warning_register">The process of adding facial data will restart and all collected data will be deleted.</string>
+    <string name="getting_face">Getting face</string>
 </resources>

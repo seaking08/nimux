@@ -66,7 +66,7 @@ class SettingsFragment : Fragment() {
 
         setClickListeners()
         getSavedData()
-        setupColorSelection() // <-- NEU: Initialisierung der Farbauswahl
+        setupColorSelection()
     }
 
     private fun setClickListeners() {
@@ -154,12 +154,7 @@ class SettingsFragment : Fragment() {
             putString(systemColorPrefKey, colorName)
         }
 
-        val intent = Intent(requireContext(), MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-
-        intent.putExtra("OPEN_SETTINGS", true)
-        requireActivity().finish()
-        startActivity(intent)
+        requireActivity().recreate()
     }
 
     private fun updateColorSelectionUI(selectedColor: String) {
