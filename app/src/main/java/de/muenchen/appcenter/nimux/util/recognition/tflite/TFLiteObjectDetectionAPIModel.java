@@ -220,6 +220,7 @@ public class TFLiteObjectDetectionAPIModel
                 }
 
                 float distance = findDistance(emb, knownEmb);
+                Timber.i("Distance: "+ distance + "from " + name);
 
                 //Recognition
                 if (ret == null || distance < ret.second) {

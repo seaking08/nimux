@@ -365,4 +365,6 @@
     <string name="face_detection_warning_text">Es wurden mehrere Gesichter erkannt. Sorgen Sie bitte dafür, dass sich nur ein Gesicht im Bild ist.</string>
     <string name="face_detection_warning_register">Der Prozess der Gesichtsdatenhinzufügung wird neugesartet. Die bis jetzt gesammelten Gesichtsdaten werden gelöscht.</string>
     <string name="getting_face">Gesicht wird erfasst</string>
+    <string name="face_feature">Gesichtszug zum Fortfahren verwenden</string>
+    <string name="eye_close">Bitte schließen Sie ein Auge</string>
 </resources>

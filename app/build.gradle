@@ -121,6 +121,4 @@ dependencies {
 
     // used for logging
     implementation "com.jakewharton.timber:timber:5.0.1"
-
-
 }

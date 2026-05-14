@@ -22,6 +22,9 @@ class FaceOverlayView(
     private var imageHeight = 0
     private var rotationDegrees = 0
     private var isFrontCamera = false
+    private var glitterAlpha: Float = 1f
+    private var showGlitter: Boolean = false
+    public var showFaceBounds = true
 
     private val paint = Paint().apply {
         color = Color.BLUE
@@ -44,11 +47,49 @@ class FaceOverlayView(
         invalidate()
     }
 
+    private val glowPaint = Paint().apply {
+        color = Color.parseColor("#FFD700") // Gold / Glitzer Farbe
+        style = Paint.Style.STROKE
+        strokeWidth = 12f
+        isAntiAlias = true
+        setShadowLayer(30f, 0f, 0f, Color.parseColor("#FFD700"))
+    }
+
+    fun setGlitterAlpha(alpha: Float) {
+        this.glitterAlpha = alpha
+        this.showGlitter = true
+        invalidate()
+    }
+
+    fun stopGlitter() {
+        this.showGlitter = false
+        invalidate()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (showGlitter && faces.isNotEmpty()) {
+
+            glowPaint.alpha = (glitterAlpha * 255).toInt()
+
+
+            glowPaint.alpha = (glitterAlpha * 255).toInt()
+
+            val inset = glowPaint.strokeWidth / 2f
+            val rect = RectF(
+                inset,
+                inset,
+                width.toFloat() - inset,
+                height.toFloat() - inset
+            )
+
+            canvas.drawRect(rect, glowPaint)
+
+        }
 
         if (imageWidth == 0 || imageHeight == 0) return
 
+        if (showFaceBounds) {
         val viewWidth = width.toFloat()
         val viewHeight = height.toFloat()
 
@@ -86,6 +127,6 @@ class FaceOverlayView(
             val rect = RectF(face.boundingBox)
             matrix.mapRect(rect)
             canvas.drawRect(rect, paint)
-        }
+        }}
     }
 }
