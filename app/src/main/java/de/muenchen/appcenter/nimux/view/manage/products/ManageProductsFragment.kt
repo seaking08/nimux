@@ -159,7 +159,8 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
             model.price,
             model.currentStock,
             model.refillSize,
-            model.productIcon
+            model.productIcon,
+            model.role
         )
     }
 
@@ -171,10 +172,18 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
             currentAmount: Int,
             refillSize: Int,
             productIcon: Int,
+            role: String?,
         ) {
             view.findViewById<TextView>(R.id.list_manage_product_name).text = name
             view.findViewById<TextView>(R.id.list_manage_product_price).text =
                 String.format(view.context.getString(R.string.money), price)
+            val roleTextView = view.findViewById<TextView>(R.id.list_manage_product_role)
+            if (role.isNullOrEmpty()) {
+                roleTextView.visibility = View.GONE
+            } else {
+                roleTextView.visibility = View.VISIBLE
+                roleTextView.text = role
+            }
             view.findViewById<TextView>(R.id.list_manage_product_amount).apply {
                 text = currentAmount.toString()
                 if (currentAmount <= 0) {

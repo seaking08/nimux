@@ -4,9 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <import type="android.view.View" />
-
         <variable
             name="viewModel"
             type="de.muenchen.appcenter.nimux.viewmodel.manage.users.EditUserViewModel" />
@@ -90,8 +88,58 @@
                             app:layout_constraintStart_toEndOf="@id/edit_user_credit_title"
                             app:layout_constraintTop_toBottomOf="@id/edit_user_title" />
 
-
                     </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/user_settings_card_role"
+                    style="?cardViewStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/default_margin"
+                    android:theme="@style/backgroundColoredCardStyleTheme"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/user_settings_card_person">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/default_margin"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Rolle verwalten"
+                            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                            android:textColor="?colorPrimary" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/role_input_layout"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/default_margin"
+                            android:hint="Rolle auswählen">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/role_autocomplete"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:saveEnabled="false"
+                                android:text="@={viewModel.selectedRole}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_configure_roles"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Rollen konfigurieren" />
+
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
@@ -102,7 +150,7 @@
                     android:layout_margin="@dimen/default_margin"
                     android:theme="@style/backgroundColoredCardStyleTheme"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/user_settings_card_person">
+                    app:layout_constraintTop_toBottomOf="@id/user_settings_card_role">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -415,11 +463,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.core.widget.NestedScrollView>
-
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/button_layout"

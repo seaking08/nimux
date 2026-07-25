@@ -54,9 +54,10 @@ class UsersRepository @Inject constructor() {
         pin: String?,
         useProductAI: Boolean,
         faceSkipsPin: Boolean,
-        faceFeatureNeeded: Boolean
+        faceFeatureNeeded: Boolean,
+        role: String?
     ) {
-        userDataSource.updateUser(id, showCredit, collectData, pin, useProductAI, faceSkipsPin, faceFeatureNeeded)
+        userDataSource.updateUser(id, showCredit, collectData, pin, useProductAI, faceSkipsPin, faceFeatureNeeded, role)
     }
 
     fun updateUserMail(id: String, mail: String) {

@@ -21,10 +21,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.EditUserFragmentBinding
 import de.muenchen.appcenter.nimux.datasources.ProductDataSource
+import de.muenchen.appcenter.nimux.datasources.UserSuggestionDataSource
 import de.muenchen.appcenter.nimux.util.hideKeyboard
 import de.muenchen.appcenter.nimux.util.recognition.FaceRecognitionModule.reloadFromEncryptedPrefs
 import de.muenchen.appcenter.nimux.util.recognition.tflite.SimilarityClassifier
 import de.muenchen.appcenter.nimux.util.showNetworkHint
+import de.muenchen.appcenter.nimux.view.manage.RoleManager
 import de.muenchen.appcenter.nimux.viewmodel.manage.users.EditUserViewModel
 import javax.inject.Inject
 
@@ -34,12 +36,17 @@ class EditUserFragment : Fragment() {
     @Inject
     lateinit var productDataSource: ProductDataSource
 
+    @Inject
+    lateinit var userSuggestionDataSource: UserSuggestionDataSource
+
     private lateinit var binding: EditUserFragmentBinding
 
     private val viewModel: EditUserViewModel by viewModels()
 
     @Inject
     lateinit var faceNet: SimilarityClassifier
+
+    private lateinit var roleManager: RoleManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,6 +67,18 @@ class EditUserFragment : Fragment() {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
+
+        roleManager = RoleManager(
+            fragment = this,
+            roleAutoComplete = binding.roleAutocomplete,
+            dataSource = userSuggestionDataSource
+        )
+
+        roleManager.initialize()
+
+        binding.buttonConfigureRoles.setOnClickListener {
+            roleManager.showRoleConfigurationDialog()
+        }
 
         setUpFacialRecognitionButtons()
         setupObservers()

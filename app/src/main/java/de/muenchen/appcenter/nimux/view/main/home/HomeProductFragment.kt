@@ -111,7 +111,15 @@ class HomeProductFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        productQuery = productsRepository.getProductQuery()
+
+        viewLifecycleOwner.lifecycleScope.launch { //Must be removed in future release
+            productsRepository.fixLegacyProductsWithoutRole()
+        }
+
+        val userRole = binding.user?.role ?: ""
+
+        productQuery = productsRepository.getProductQueryByRole(userRole, false) //todo: make superrole
+
         options =
             FirestoreRecyclerOptions.Builder<Product>().setQuery(productQuery, Product::class.java)
                 .build()
@@ -496,8 +504,11 @@ class HomeProductFragment : Fragment() {
         plusMinusClicked(null)
         lifecycleScope.launch(Dispatchers.IO) {
             if (productAmountList.isEmpty()) {
-                val prods = productsRepository.getAllProducts()
-                prods.forEach { prod ->
+                val userRole = binding.user?.role ?: ""
+                val prodsForRole = productsRepository.getAllProductsByRole(userRole)
+                val prodsGeneral = if (userRole.isNotEmpty()) productsRepository.getAllProductsByRole("") else emptyList()
+                val allProds = (prodsForRole + prodsGeneral)
+                allProds.forEach { prod ->
                     productAmountList.add(
                         MultiOrderProductListWithProduct(
                             MultiOrderProductList(

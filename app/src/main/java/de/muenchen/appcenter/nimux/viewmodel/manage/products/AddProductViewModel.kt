@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.muenchen.appcenter.nimux.model.Role
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import kotlinx.coroutines.launch
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddProductViewModel @Inject constructor(
-    private val usersRepository: UsersRepository, private val productsRepository: ProductsRepository
+    private val usersRepository: UsersRepository,
+    private val productsRepository: ProductsRepository
 ) : ViewModel() {
 
     private val _addProductDone = MutableLiveData<Boolean>()
@@ -36,6 +38,11 @@ class AddProductViewModel @Inject constructor(
     val productIcon = MutableLiveData(0)
     val productStock = MutableLiveData("")
     val productRefillSize = MutableLiveData("")
+
+    val roleNameText = MutableLiveData("")
+
+    var selectedRole: Role? = null
+        private set
 
     private val _performHapticFeedback = MutableLiveData<Boolean>()
     val performHapticFeedback: LiveData<Boolean>
@@ -61,64 +68,80 @@ class AddProductViewModel @Inject constructor(
         get() = _showProgressBar
 
     fun addProduct() {
-        productNameEmpty.value = productName.value?.isEmpty()
-        productPriceEmpty.value = productPrice.value?.isEmpty()
-        if (refillable.value!!) {
-            productStockEmpty.value = productStock.value?.isEmpty()
-            productRefillSizeEmpty.value = productRefillSize.value?.isEmpty()
-            if (!productNameEmpty.value!! && !productPriceEmpty.value!! && !productStockEmpty.value!! && !productRefillSizeEmpty.value!!) {
-                //Refill is true and no input is empty
-                productPriceWrong.value = productPrice.value?.replace(',','.')?.toDoubleOrNull() == null
-                productStockWrong.value = productStock.value?.toIntOrNull() == null
-                productRefillSizeWrong.value =
-                    productRefillSize.value?.toIntOrNull() == null || productRefillSize.value!!.toInt() <= 0
-                if (!productPriceWrong.value!! && !productStockWrong.value!! && !productRefillSizeWrong.value!!) {
+        val name = productName.value.orEmpty().trim()
+        val priceStr = productPrice.value.orEmpty()
+        val stockStr = productStock.value.orEmpty()
+        val refillStr = productRefillSize.value.orEmpty()
+        val isRefillable = refillable.value ?: false
 
-                    viewModelScope.launch {
-                        _showProgressBar.value = true
-                        if (usersRepository.connectedOnline()) {
-                            if (productsRepository.productExists(productName.value.toString()))
-                                productNameExists.value = true
-                            else {
-                                productsRepository.addRefillableProduct(
-                                    productName.value.toString(),
-                                    productPrice.value!!.replace(',','.').toDouble(),
-                                    productIcon.value!!.toInt(),
-                                    productStock.value!!.toInt(),
-                                    productRefillSize.value!!.toInt()
-                                )
-                                _productAdded.value = true
-                            }
-                        } else _networkHint.value = true
-                        _showProgressBar.value = false
-                    }
-                }
-            }
-        } else {
-            if (!productNameEmpty.value!! && !productPriceEmpty.value!!) {
-                //Refill is false and no input is empty
-                productPriceWrong.value = productPrice.value?.replace(',','.')?.toDoubleOrNull() == null
-                if (!productPriceWrong.value!!) {
-                    viewModelScope.launch {
-                        _showProgressBar.value = true
-                        if (usersRepository.connectedOnline()) {
-                            if (productsRepository.productExists(productName.value.toString()))
-                                productNameExists.value = true
-                            else {
-                                productsRepository.addNonRefillableProduct(
-                                    productName.value.toString(),
-                                    productPrice.value!!.replace(',','.').toDouble(),
-                                    productIcon.value!!.toInt()
-                                )
-                                _productAdded.value = true
-                            }
-                        } else _networkHint.value = true
-                        _showProgressBar.value = false
-                    }
-                }
-            }
+        val nameIsEmpty = name.isEmpty()
+        val priceIsEmpty = priceStr.isEmpty()
+        val stockIsEmpty = isRefillable && stockStr.isEmpty()
+        val refillIsEmpty = isRefillable && refillStr.isEmpty()
+
+        productNameEmpty.value = nameIsEmpty
+        productPriceEmpty.value = priceIsEmpty
+        productStockEmpty.value = stockIsEmpty
+        productRefillSizeEmpty.value = refillIsEmpty
+
+        if (nameIsEmpty || priceIsEmpty || stockIsEmpty || refillIsEmpty) {
+            return
         }
 
+        val parsedPrice = priceStr.replace(',', '.').toDoubleOrNull()
+        val parsedStock = stockStr.toIntOrNull()
+        val parsedRefill = refillStr.toIntOrNull()
+
+        val isPriceWrong = parsedPrice == null
+        val isStockWrong = isRefillable && parsedStock == null
+        val isRefillWrong = isRefillable && (parsedRefill == null || parsedRefill <= 0)
+
+        productPriceWrong.value = isPriceWrong
+        productStockWrong.value = isStockWrong
+        productRefillSizeWrong.value = isRefillWrong
+
+        if (isPriceWrong || isStockWrong || isRefillWrong) {
+            return
+        }
+
+        val roleText = roleNameText.value.orEmpty().trim()
+        val finalRole: Role? = if (roleText.isNotBlank()) {
+            selectedRole?.copy(name = roleText) ?: Role(name = roleText)
+        } else null
+
+        viewModelScope.launch {
+            _showProgressBar.value = true
+            if (usersRepository.connectedOnline()) {
+                if (productsRepository.productExists(name)) {
+                    productNameExists.value = true
+                } else {
+                    val price = parsedPrice ?: 0.0
+                    val icon = productIcon.value ?: 0
+
+                    if (isRefillable) {
+                        productsRepository.addRefillableProduct(
+                            name,
+                            price,
+                            icon,
+                            parsedStock ?: 0,
+                            parsedRefill ?: 0,
+                            finalRole!!.name
+                        )
+                    } else {
+                        productsRepository.addNonRefillableProduct(
+                            name,
+                            price,
+                            icon,
+                            finalRole!!
+                        )
+                    }
+                    _productAdded.value = true
+                }
+            } else {
+                _networkHint.value = true
+            }
+            _showProgressBar.value = false
+        }
     }
 
     fun cancelAdd() {
@@ -127,7 +150,7 @@ class AddProductViewModel @Inject constructor(
     }
 
     fun changeRefill() {
-        _refillable.value = !refillable.value!!
+        _refillable.value = !(refillable.value ?: false)
         productStockWrong.value = false
         productStockEmpty.value = false
         productRefillSizeEmpty.value = false

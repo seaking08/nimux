@@ -19,6 +19,7 @@ import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentAddProductBinding
+import de.muenchen.appcenter.nimux.datasources.UserSuggestionDataSource
 import de.muenchen.appcenter.nimux.util.hideKeyboard
 import de.muenchen.appcenter.nimux.util.product_icon_bottle
 import de.muenchen.appcenter.nimux.util.product_icon_can
@@ -33,13 +34,18 @@ import de.muenchen.appcenter.nimux.util.product_icon_pizza
 import de.muenchen.appcenter.nimux.util.product_icon_tea
 import de.muenchen.appcenter.nimux.util.product_icon_water
 import de.muenchen.appcenter.nimux.util.showNetworkHint
+import de.muenchen.appcenter.nimux.view.manage.RoleManager
 import de.muenchen.appcenter.nimux.viewmodel.manage.products.AddProductViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AddProductFragment : Fragment() {
 
     private lateinit var binding: FragmentAddProductBinding
     private val viewModel: AddProductViewModel by viewModels()
+    private var roleManager: RoleManager? = null
+    @Inject
+    lateinit var userSuggestionDataSource: UserSuggestionDataSource
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -188,8 +194,23 @@ class AddProductFragment : Fragment() {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
+        
+        roleManager = RoleManager(
+            fragment = this,
+            roleAutoComplete = binding.roleAutocomplete,
+            dataSource = userSuggestionDataSource
+        ).also { it.initialize() }
+
+        binding.buttonConfigureRoles.setOnClickListener {
+            roleManager?.showRoleConfigurationDialog()
+        }
 
         setups()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        roleManager = null
     }
 
     private fun setups() {

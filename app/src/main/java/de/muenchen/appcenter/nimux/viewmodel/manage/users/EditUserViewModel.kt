@@ -21,6 +21,8 @@ class EditUserViewModel @Inject constructor(
     var user: User = savedStateHandle.get<User>("currentUser")
         ?: error("User missing in SavedStateHandle")
 
+    var selectedRole: String = user.role ?: ""
+
     private val _showCredit = MutableLiveData(user.showCredit)
     val showCredit: LiveData<Boolean>
         get() = _showCredit
@@ -165,7 +167,8 @@ class EditUserViewModel @Inject constructor(
                         newPin,
                         useProdAi ?: false,
                         facePinSkipper ?: false,
-                        faceFeatureNeeded ?:false
+                        faceFeatureNeeded ?: false,
+                        selectedRole
                     )
                 } else _showNetworkHint.value = true
                 _showProgressBar.value = false
@@ -207,7 +210,6 @@ class EditUserViewModel @Inject constructor(
     fun cancel() {
         _canceled.value = true
     }
-
 
     private val _hideKeyboard = MutableLiveData<Boolean>()
     val hideKeyboard: LiveData<Boolean>

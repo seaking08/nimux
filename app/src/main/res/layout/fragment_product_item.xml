@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <import type="android.view.View" />
+        <import type="android.text.TextUtils" />
 
         <variable
             name="viewModel"
@@ -37,6 +39,7 @@
                 android:padding="@dimen/default_layout_padding">
 
 
+                <!-- HEADER LAYOUT MIT NAME, ROLLE UND ICON -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/header_layout"
                     android:layout_width="match_parent"
@@ -64,6 +67,23 @@
                         app:layout_constraintEnd_toStartOf="@id/product_item_icon"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- NEU: Produktrolle sauber unter dem Namen -->
+                    <TextView
+                        android:id="@+id/product_item_role"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="@dimen/default_margin"
+                        android:text="@{viewModel.product.role}"
+                        android:textAppearance="?attr/textAppearanceBody2"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:visibility="@{TextUtils.isEmpty(viewModel.product.role) ? View.GONE : View.VISIBLE}"
+                        app:layout_constraintEnd_toStartOf="@id/product_item_icon"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/product_item_name"
+                        tools:text="Vorausgesetzte Rolle: Administrator" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

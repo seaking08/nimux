@@ -161,16 +161,18 @@ class ManageUserAdapter internal constructor(options: FirestoreRecyclerOptions<U
     }
 
     override fun onBindViewHolder(holder: ManageUserViewHolder, position: Int, model: User) {
-        holder.setAttrs(model.name, model.toPay)
+        holder.setAttrs(model.name, model.role, model.toPay)
     }
 
     inner class ManageUserViewHolder internal constructor(private val view: View) :
         RecyclerView.ViewHolder(view) {
         internal fun setAttrs(
             userName: String,
+            userRole: String?,
             userPay: Double,
         ) {
             view.findViewById<TextView>(R.id.list_user_name).text = userName
+            view.findViewById<TextView>(R.id.list_user_role).text = userRole ?: "Keine Rolle"
             view.findViewById<TextView>(R.id.list_user_pay).text =
                 (view.resources.getString(R.string.credit) + " " + String.format(
                     "%.2f",

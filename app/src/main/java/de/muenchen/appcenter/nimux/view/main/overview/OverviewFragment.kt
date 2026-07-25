@@ -130,6 +130,7 @@ class OverviewAdapter internal constructor(options: FirestoreRecyclerOptions<Use
             user: User,
         ) {
             view.findViewById<TextView>(R.id.overview_item_name).text = user.name
+            view.findViewById<TextView>(R.id.overview_item_role).text = (if (user.role.isNullOrEmpty()) "" else user.role) as CharSequence?
             if (user.showCredit)
                 view.findViewById<TextView>(R.id.overview_item_credit).text =
                     String.format("%.2f", user.toPay) + " €"

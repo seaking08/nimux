@@ -1,6 +1,5 @@
 package de.muenchen.appcenter.nimux.view.manage.products
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,14 +26,20 @@ import de.muenchen.appcenter.nimux.util.product_icon_pizza
 import de.muenchen.appcenter.nimux.util.product_icon_tea
 import de.muenchen.appcenter.nimux.util.product_icon_water
 import de.muenchen.appcenter.nimux.databinding.FragmentEditProductBinding
+import de.muenchen.appcenter.nimux.datasources.UserSuggestionDataSource
 import de.muenchen.appcenter.nimux.util.hideKeyboard
 import de.muenchen.appcenter.nimux.util.showNetworkHint
+import de.muenchen.appcenter.nimux.view.manage.RoleManager
 import de.muenchen.appcenter.nimux.viewmodel.manage.products.EditProductViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class EditProductFragment : Fragment() {
 
     private lateinit var binding : FragmentEditProductBinding
+    private var roleManager: RoleManager? = null
+    @Inject
+    lateinit var userSuggestionDataSource: UserSuggestionDataSource
 
     private val viewModel: EditProductViewModel by viewModels()
     override fun onCreateView(
@@ -55,6 +60,21 @@ class EditProductFragment : Fragment() {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
+
+        roleManager = RoleManager(
+            fragment = this,
+            roleAutoComplete = binding.roleAutocomplete,
+            dataSource = userSuggestionDataSource
+        ).also { it.initialize() }
+
+        binding.buttonConfigureRoles.setOnClickListener {
+            roleManager?.showRoleConfigurationDialog()
+        }
+
+        binding.roleAutocomplete.setOnItemClickListener { parent, _, position, _ ->
+            val selectedRoleName = parent.getItemAtPosition(position) as String
+            viewModel.setSelectedRole(selectedRoleName)
+        }
 
         binding.editProductTitle.text = getString(R.string.edit_title, viewModel.product.name)
         binding.editProductChooseIconButton.setOnClickListener {
@@ -100,6 +120,11 @@ class EditProductFragment : Fragment() {
         }
 
         setupObservers()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        roleManager = null
     }
 
     private fun setupObservers() {

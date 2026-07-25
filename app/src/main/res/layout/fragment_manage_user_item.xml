@@ -48,13 +48,23 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
+                    android:id="@+id/manage_user_role"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.user.role}"
+                    android:textAppearance="?textAppearanceBody1"
+                    android:textColor="?colorOnBackground"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/manage_user_name" />
+
+                <TextView
                     android:id="@+id/manage_user_amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/group_seperation_margin"
                     android:text="@string/credit"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/manage_user_name" />
+                    app:layout_constraintTop_toBottomOf="@id/manage_user_role" />
 
                 <TextView
                     android:id="@+id/manage_user_topay"

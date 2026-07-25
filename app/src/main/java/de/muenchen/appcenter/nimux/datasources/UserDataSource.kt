@@ -234,7 +234,8 @@ class UserDataSource @Inject constructor(
         pin: String?,
         useProductAI: Boolean,
         faceSkipsPin: Boolean,
-        faceFeatureNeeded: Boolean
+        faceFeatureNeeded: Boolean,
+        role: String?
     ) {
         val user = userRef.document(userID)
         user.update("showCredit", showCredit)
@@ -243,6 +244,7 @@ class UserDataSource @Inject constructor(
         user.update("useProductAI", useProductAI)
         user.update("faceSkipsPin", faceSkipsPin)
         user.update("faceFeatureNeeded", faceFeatureNeeded)
+        user.update("role", role)
         logUserAction(
             userID,
             String.format(userlog_description_update, showCredit, collectData, pin != null)

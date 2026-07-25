@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.muenchen.appcenter.nimux.model.Role
 import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.md5
@@ -16,6 +17,8 @@ class AddUserViewModel @Inject constructor(private val usersRepository: UsersRep
     ViewModel() {
 
     var nameText: String = ""
+    var roleNameText: String = ""
+    var role: Role = Role(name = "")
     var pinText: String = ""
     var confirmPinText: String = ""
     private lateinit var newUser: User
@@ -58,25 +61,31 @@ class AddUserViewModel @Inject constructor(private val usersRepository: UsersRep
 
     fun addUserClick() {
         _nameEntered.value = nameText.isNotBlank()
+
+        val selectedName = roleNameText.ifBlank { role.name }
+        val finalRole = if (selectedName.isNotBlank()) Role(name = selectedName) else null
+
         if (requirePin.value == true) {
             _pinEntered.value = pinText.length == 4 && pinText.toIntOrNull() != null
             _pinConfirmed.value = pinText == confirmPinText
-            if (nameEntered.value!! && pinEntered.value!! && pinConfirmed.value!!) {
+            if (nameEntered.value == true && pinEntered.value == true && pinConfirmed.value == true) {
                 newUser = User(
                     name = nameText,
-                    showCredit = showCredit.value!!,
-                    collectData = processData.value!!,
+                    role = finalRole!!.name,
+                    showCredit = showCredit.value ?: true,
+                    collectData = processData.value ?: true,
                     pin = md5(pinText)
                 )
                 addUser()
             }
         } else {
             _pinEntered.value = true
-            if (nameEntered.value!!) {
+            if (nameEntered.value == true) {
                 newUser = User(
                     name = nameText,
-                    showCredit = showCredit.value!!,
-                    collectData = processData.value!!,
+                    role = finalRole!!.name,
+                    showCredit = showCredit.value ?: true,
+                    collectData = processData.value ?: true
                 )
                 addUser()
             }
@@ -119,16 +128,18 @@ class AddUserViewModel @Inject constructor(private val usersRepository: UsersRep
     }
 
     fun switchShowCredit() {
-        _showCredit.value = !showCredit.value!!
+        _showCredit.value = !(showCredit.value ?: true)
     }
 
     fun switchRequirePin() {
-        _requirePin.value = !requirePin.value!!
-        if (!requirePin.value!!) doHideKeyboard()
+        val current = requirePin.value ?: false
+        val nextState = !current
+        _requirePin.value = nextState
+        if (!nextState) doHideKeyboard()
     }
 
     fun switchProcessData() {
-        _processData.value = !processData.value!!
+        _processData.value = !(processData.value ?: true)
     }
 
     private val _hideKeyboard = MutableLiveData<Boolean>()
@@ -138,5 +149,4 @@ class AddUserViewModel @Inject constructor(private val usersRepository: UsersRep
     private fun doHideKeyboard() {
         _hideKeyboard.value = true
     }
-
 }

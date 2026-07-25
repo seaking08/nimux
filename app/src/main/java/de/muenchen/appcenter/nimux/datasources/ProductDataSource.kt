@@ -148,21 +148,27 @@ class ProductDataSource @Inject constructor(
         requireCollectionProductRef().document(id).delete()
     }
 
-    fun updateProduct(
+    suspend fun updateProduct(
         id: String,
         price: Double,
         productIcon: Int,
         currentStock: Int,
         refillSize: Int,
+        role: String?
     ) {
-        val product = requireCollectionProductRef().document(id)
-        product.update("price", price)
-        product.update("productIcon", productIcon)
-        product.update("currentStock", currentStock)
-        product.update("refillSize", refillSize)
+        val updates = hashMapOf<String, Any?>(
+            "price" to price,
+            "productIcon" to productIcon,
+            "currentStock" to currentStock,
+            "refillSize" to refillSize,
+            "role" to role
+        )
+
+        requireCollectionProductRef().document(id).update(updates).await()
+
         logProductAction(
             id,
-            String.Companion.format(
+            String.format(
                 productlog_description_update,
                 price.toString(),
                 productIcon.toString(),
@@ -170,6 +176,20 @@ class ProductDataSource @Inject constructor(
                 refillSize.toString()
             )
         )
+    }
+
+    suspend fun fixLegacyProductsWithoutRole() {
+        try {
+            val snapshot = requireCollectionProductRef().get(Source.SERVER).await()
+
+            for (document in snapshot.documents) {
+                if (!document.contains("role") || document.get("role") == null) {
+                    document.reference.update("role", "").await()
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e("Fehler bei Server-Abfrage")
+        }
     }
 
     suspend fun addStock(prodID: String, amount: Int) {

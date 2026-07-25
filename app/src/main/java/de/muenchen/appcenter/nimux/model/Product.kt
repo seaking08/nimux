@@ -12,5 +12,6 @@ data class Product(
     val productIcon: Int = product_icon_none,
     val currentStock: Int = 0,
     val refillSize: Int = 0,
+    val role: String? = "",
     val stringSortID: String = stringToStringSortID(name),
 ) : Parcelable

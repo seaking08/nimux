@@ -46,6 +46,10 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.sqrt
 
+//Todo: Icons mehr, Geld Globale Einstellung ja/nein, Rolle/Benennung (Gruppenführer, Kleiderwart ...)
+//Todo: Aufteilung Produkt (Tack pro Produkt) --> Kategorie Klickeffizient, auch für Benutzer?
+//Todo: Warehouse System
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -58,7 +62,6 @@ class MainActivity : AppCompatActivity() {
     val countDownTime = 45000
     private lateinit var navController: NavController
     private var isLoggedInState: Boolean? = null
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         prepareEnterTransition()

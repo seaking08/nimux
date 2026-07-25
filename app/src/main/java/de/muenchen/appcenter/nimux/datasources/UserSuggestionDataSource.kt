@@ -3,10 +3,16 @@ package de.muenchen.appcenter.nimux.datasources
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.Query
 import dagger.internal.Provider
+import de.muenchen.appcenter.nimux.model.Role
 import de.muenchen.appcenter.nimux.model.User
+import de.muenchen.appcenter.nimux.util.await
 import de.muenchen.appcenter.nimux.util.collection_suggest_users
+import de.muenchen.appcenter.nimux.util.collection_suggest_users_role
 import de.muenchen.appcenter.nimux.util.stringToStringSortID
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
 class UserSuggestionDataSource @Inject constructor(
@@ -18,6 +24,11 @@ class UserSuggestionDataSource @Inject constructor(
     private val userSuggestionsRef
         get() = tenantRefProvider.get()
             ?.collection(collection_suggest_users)
+            ?: throw IllegalStateException("Tenant missing – user is not logged in")
+
+    private val userRolesRef
+        get() = tenantRefProvider.get()
+            ?.collection(collection_suggest_users_role)
             ?: throw IllegalStateException("Tenant missing – user is not logged in")
 
     fun addUserSuggestion(user: User) {
@@ -67,5 +78,34 @@ class UserSuggestionDataSource @Inject constructor(
             res.complete(true)
         }
         return res.await()
+    }
+
+    fun getRolesFlow(): Flow<List<Role>> = callbackFlow {
+        val listenerRegistration = userRolesRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            val roles = snapshot?.documents?.mapNotNull { doc ->
+                doc.toObject(Role::class.java)
+            } ?: emptyList()
+
+            trySend(roles)
+        }
+
+        awaitClose { listenerRegistration.remove() }
+    }
+
+    suspend fun addRole(role: Role) {
+        val roleData = mapOf(
+            "name" to role.name,
+            "superRole" to role.superRole
+        )
+        userRolesRef.document(role.name).set(roleData).await()
+    }
+
+    suspend fun deleteRole(role: Role) {
+        userRolesRef.document(role.name).delete().await()
     }
 }

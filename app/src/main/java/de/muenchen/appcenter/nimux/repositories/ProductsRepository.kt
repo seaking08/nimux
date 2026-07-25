@@ -4,9 +4,9 @@ import com.google.firebase.firestore.Query
 import de.muenchen.appcenter.nimux.datasources.ProductDataSource
 import de.muenchen.appcenter.nimux.datasources.UserDataSource
 import de.muenchen.appcenter.nimux.model.Product
+import de.muenchen.appcenter.nimux.model.Role
 import java.util.Date
 import javax.inject.Inject
-
 
 class ProductsRepository @Inject constructor() {
 
@@ -29,6 +29,7 @@ class ProductsRepository @Inject constructor() {
         productIcon: Int,
         currentStock: Int,
         refillSize: Int,
+        role: String,
     ) {
         productDataSource.addProduct(
             Product(
@@ -36,17 +37,39 @@ class ProductsRepository @Inject constructor() {
                 price,
                 productIcon,
                 currentStock,
-                refillSize
+                refillSize,
+                role
             )
         )
     }
 
-    fun addNonRefillableProduct(name: String, price: Double, productIcon: Int) {
-        productDataSource.addProduct(Product(name, price, productIcon))
+    fun addNonRefillableProduct(
+        name: String,
+        price: Double,
+        productIcon: Int,
+        role: Role
+    ) {
+        productDataSource.addProduct(Product(name, price, productIcon, role = role.name))
     }
 
     fun getProductQuery(): Query {
-        return productDataSource.getProductQuery()
+        return productDataSource.getProductQuery().orderBy("name")
+    }
+
+    fun getProductQueryByRole(userRole: String?, isSuperUser: Boolean): Query {
+        val baseQuery = productDataSource.getProductQuery()
+
+        if (isSuperUser) {
+            return baseQuery
+        }
+
+        val targetRoles: List<Any?> = listOfNotNull(userRole) + listOf("", null)
+
+        return baseQuery.whereIn("role", targetRoles.distinct())
+    }
+
+    suspend fun fixLegacyProductsWithoutRole() {
+        productDataSource.fixLegacyProductsWithoutRole()
     }
 
     fun getUserStatQuery(userId: String): Query {
@@ -75,14 +98,15 @@ class ProductsRepository @Inject constructor() {
         productDataSource.addStock(id, amount)
     }
 
-    fun updateProduct(
+    suspend fun updateProduct(
         id: String,
         price: Double,
         productIcon: Int,
         currentStock: Int,
         refillSize: Int,
+        role: String?
     ) {
-        productDataSource.updateProduct(id, price, productIcon, currentStock, refillSize)
+        productDataSource.updateProduct(id, price, productIcon, currentStock, refillSize, role)
     }
 
     suspend fun productBought(
@@ -109,5 +133,9 @@ class ProductsRepository @Inject constructor() {
 
     suspend fun getAllProducts(): List<Product> = productDataSource.getAllProducts()
 
+    suspend fun getAllProductsByRole(role: String): List<Product> {
+        val allProducts = productDataSource.getAllProducts()
+        return allProducts.filter { it.role == role }
+    }
 
 }

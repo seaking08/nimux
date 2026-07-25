@@ -16,10 +16,12 @@ import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentAddUserBinding
+import de.muenchen.appcenter.nimux.datasources.UserSuggestionDataSource
 import de.muenchen.appcenter.nimux.util.hideKeyboard
 import de.muenchen.appcenter.nimux.util.showNetworkHint
+import de.muenchen.appcenter.nimux.view.manage.RoleManager
 import de.muenchen.appcenter.nimux.viewmodel.manage.users.AddUserViewModel
-import kotlin.getValue
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AddUserFragment : Fragment() {
@@ -27,6 +29,10 @@ class AddUserFragment : Fragment() {
     private var _binding: FragmentAddUserBinding? = null
     private val binding get() = _binding!!
     private val viewModel: AddUserViewModel by viewModels()
+    private var roleManager: RoleManager? = null
+
+    @Inject
+    lateinit var userSuggestionDataSource: UserSuggestionDataSource
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,12 +44,31 @@ class AddUserFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
+        setupObservers()
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        roleManager = RoleManager(
+            fragment = this,
+            roleAutoComplete = binding.roleAutocomplete,
+            dataSource = userSuggestionDataSource
+        ).also { it.initialize() }
+
+        binding.buttonConfigureRoles.setOnClickListener {
+            roleManager?.showRoleConfigurationDialog()
+        }
+    }
+
+    private fun setupObservers() {
         viewModel.nameEntered.observe(viewLifecycleOwner) { nameEntered ->
             if (!nameEntered)
                 binding.addUserInputName.error = getString(R.string.add_user_name_error)
             else
                 binding.addUserInputName.error = null
-
         }
 
         viewModel.userAdded.observe(viewLifecycleOwner) { userAdded ->
@@ -133,13 +158,11 @@ class AddUserFragment : Fragment() {
                 hideKeyboard(requireActivity())
             }
         }
-
-        return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        roleManager = null
         _binding = null
     }
-
 }
