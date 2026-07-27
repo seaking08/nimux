@@ -5,6 +5,8 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import de.muenchen.appcenter.nimux.datasources.DonateItemDataSource
 import de.muenchen.appcenter.nimux.datasources.UserDataSource
+import de.muenchen.appcenter.nimux.datasources.UserSuggestionDataSource
+import kotlinx.coroutines.flow.first
 import de.muenchen.appcenter.nimux.model.MultiOrderProductListWithProduct
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.model.User
@@ -18,6 +20,9 @@ class UsersRepository @Inject constructor() {
 
     @Inject
     lateinit var donateItemDataSource: DonateItemDataSource
+
+    @Inject
+    lateinit var userSuggestionDataSource: UserSuggestionDataSource
 
     suspend fun connectedOnline(): Boolean {
         return userDataSource.checkOnlineConnection()
@@ -108,4 +113,11 @@ class UsersRepository @Inject constructor() {
         userDataSource.payMultiProduct(userID, multiOrderProductListWithProduct)
     }
 
+    suspend fun isSuperRole(roleName: String): Boolean {
+        if (roleName.isBlank()) return false
+
+        val roles = userSuggestionDataSource.getRolesFlow().first()
+
+        return roles.find { it.name.equals(roleName, ignoreCase = true) }?.superRole ?: false
+    }
 }

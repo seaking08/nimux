@@ -1,6 +1,6 @@
 package de.muenchen.appcenter.nimux.view.manage
 
-import android.R
+import de.muenchen.appcenter.nimux.R
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Filter
@@ -28,10 +28,9 @@ class RoleManager(
     private val roleAdapter: ArrayAdapter<String> by lazy {
         object : ArrayAdapter<String>(
             fragment.requireContext(),
-            R.layout.simple_dropdown_item_1line,
+            android.R.layout.simple_dropdown_item_1line,
             roleNamesList
         ) {
-            //Deactivates filter to show all roles
             override fun getFilter(): Filter {
                 return object : Filter() {
                     override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -84,14 +83,15 @@ class RoleManager(
     fun showRoleConfigurationDialog() {
         val dialogView = fragment.layoutInflater.inflate(de.muenchen.appcenter.nimux.R.layout.dialog_manage_roles, null)
         val newRoleEditText = dialogView.findViewById<TextInputEditText>(de.muenchen.appcenter.nimux.R.id.new_role_edit_text)
+        val isSuperRoleCheckBox = dialogView.findViewById<com.google.android.material.checkbox.MaterialCheckBox>(de.muenchen.appcenter.nimux.R.id.checkbox_is_super_role)
         val addButton = dialogView.findViewById<MaterialButton>(de.muenchen.appcenter.nimux.R.id.button_add_role_dialog)
 
         activeRolesContainer = dialogView.findViewById(de.muenchen.appcenter.nimux.R.id.roles_list_container)
 
         val dialog = MaterialAlertDialogBuilder(fragment.requireContext())
-            .setTitle("Rollen konfigurieren")
+            .setTitle(fragment.getString(R.string.action_role))
             .setView(dialogView)
-            .setPositiveButton("Fertig") { dialogInterface, _ ->
+            .setPositiveButton(fragment.getString(R.string.save)) { dialogInterface, _ ->
                 activeRolesContainer = null
                 dialogInterface.dismiss()
             }
@@ -102,9 +102,10 @@ class RoleManager(
 
         addButton.setOnClickListener {
             val newRoleName = newRoleEditText.text.toString().trim()
+            val isSuperRole = isSuperRoleCheckBox.isChecked
 
             if (newRoleName.isNotEmpty() && !roleNamesList.contains(newRoleName)) {
-                val newRoleObject = Role(name = newRoleName, superRole = false)
+                val newRoleObject = Role(name = newRoleName, superRole = isSuperRole)
 
                 fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     try {
@@ -112,6 +113,7 @@ class RoleManager(
 
                         fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                             newRoleEditText.text?.clear()
+                            isSuperRoleCheckBox.isChecked = false
                         }
                     } catch (e: Exception) {
                         Timber.e(e, "Fehler beim Speichern der Rolle")
@@ -129,11 +131,26 @@ class RoleManager(
 
         rolesContainer.removeAllViews()
         for (role in rolesList) {
-            val itemView = fragment.layoutInflater.inflate(de.muenchen.appcenter.nimux.R.layout.item_role, rolesContainer, false)
-            val roleNameText = itemView.findViewById<TextView>(de.muenchen.appcenter.nimux.R.id.text_role_name)
-            val deleteButton = itemView.findViewById<MaterialButton>(de.muenchen.appcenter.nimux.R.id.button_delete_role)
+            val itemView = fragment.layoutInflater.inflate(R.layout.item_role, rolesContainer, false)
+            val roleNameText = itemView.findViewById<TextView>(R.id.text_role_name)
+            val superRoleCheckBox = itemView.findViewById<com.google.android.material.checkbox.MaterialCheckBox>(R.id.checkbox_item_super_role)
+            val deleteButton = itemView.findViewById<MaterialButton>(R.id.button_delete_role)
 
             roleNameText.text = role.name
+
+            superRoleCheckBox.setOnCheckedChangeListener(null)
+            superRoleCheckBox.isChecked = role.superRole
+
+            superRoleCheckBox.setOnCheckedChangeListener { _, isChecked ->
+                val updatedRole = role.copy(superRole = isChecked)
+                fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        dataSource.addRole(updatedRole)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Fehler beim Aktualisieren der Rolle")
+                    }
+                }
+            }
 
             deleteButton.setOnClickListener {
                 fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {

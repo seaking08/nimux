@@ -407,4 +407,7 @@
     <string name="getting_face">Getting face</string>
     <string name="face_feature">Face feature needed to continue</string>
     <string name="eye_close">Please close one eye</string>
+    <string name="action_role">Manage roles</string>
+    <string name="super_role">Superrole</string>
+    <string name="new_role">New role</string>
 </resources>

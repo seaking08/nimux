@@ -47,6 +47,7 @@ import de.muenchen.appcenter.nimux.model.MultiOrderProductList
 import de.muenchen.appcenter.nimux.model.MultiOrderProductListWithProduct
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
+import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.MultiOrderOverviewAdapter
 import de.muenchen.appcenter.nimux.util.MultiOrderProductAdapter
 import de.muenchen.appcenter.nimux.util.RangeValidator
@@ -67,6 +68,9 @@ class HomeProductFragment : Fragment() {
 
     @Inject
     lateinit var productsRepository: ProductsRepository
+
+    @Inject
+    lateinit var usersRepository: UsersRepository
 
     @Inject
     lateinit var donateItemDataSource: DonateItemDataSource
@@ -112,34 +116,40 @@ class HomeProductFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewLifecycleOwner.lifecycleScope.launch { //Must be removed in future release
+        viewLifecycleOwner.lifecycleScope.launch {
             productsRepository.fixLegacyProductsWithoutRole()
-        }
 
-        val userRole = binding.user?.role ?: ""
+            val userRole = binding.user?.role ?: ""
 
-        productQuery = productsRepository.getProductQueryByRole(userRole, false) //todo: make superrole
+            productQuery = productsRepository.getProductQueryByRole(
+                userRole,
+                usersRepository.isSuperRole(userRole)
+            )
 
-        options =
-            FirestoreRecyclerOptions.Builder<Product>().setQuery(productQuery, Product::class.java)
+            options = FirestoreRecyclerOptions.Builder<Product>()
+                .setQuery(productQuery, Product::class.java)
                 .build()
-        productAdapter = ProductHomeAdapter(options)
-        postponeEnterTransition()
-        view.doOnPreDraw {
-            startPostponedEnterTransition()
+
+            productAdapter = ProductHomeAdapter(options)
+            productAdapter.startListening()
+
+            setUpSingleBuy()
+
+            postponeEnterTransition()
+            view.doOnPreDraw {
+                startPostponedEnterTransition()
+            }
         }
 
         binding.otherOptionsButtonHomeProduct.setOnClickListener { fab ->
             showFabPopUpMenu(fab, R.menu.home_product_other_options_menu)
         }
         binding.otherOptionsButtonHomeProduct.text = getString(R.string.single_buy_menu_title)
-        setUpSingleBuy()
         binding.lifecycleOwner = viewLifecycleOwner
         (activity as AppCompatActivity)
             .supportActionBar
             ?.setDisplayHomeAsUpEnabled(false)
     }
-
     @SuppressLint("RestrictedApi")
     private fun showFabPopUpMenu(v: View, @MenuRes homeProductOtherOptionsMenu: Int) {
         val popup = PopupMenu(requireContext(), v)
@@ -505,9 +515,9 @@ class HomeProductFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             if (productAmountList.isEmpty()) {
                 val userRole = binding.user?.role ?: ""
-                val prodsForRole = productsRepository.getAllProductsByRole(userRole)
-                val prodsGeneral = if (userRole.isNotEmpty()) productsRepository.getAllProductsByRole("") else emptyList()
-                val allProds = (prodsForRole + prodsGeneral)
+                val prodsForRole = productsRepository.getAllProductsByRole(userRole, usersRepository.isSuperRole(userRole))
+                val prodsGeneral = if (userRole.isNotEmpty()) productsRepository.getAllProductsByRole("", false) else emptyList()
+                val allProds = (prodsForRole + prodsGeneral).distinctBy { it.stringSortID }
                 allProds.forEach { prod ->
                     productAmountList.add(
                         MultiOrderProductListWithProduct(
@@ -655,7 +665,9 @@ class HomeProductFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        productAdapter.startListening()
+        if (::productAdapter.isInitialized) {
+            productAdapter.startListening()
+        }
     }
 
     override fun onDestroy() {

@@ -367,4 +367,7 @@
     <string name="getting_face">Gesicht wird erfasst</string>
     <string name="face_feature">Gesichtszug zum Fortfahren verwenden</string>
     <string name="eye_close">Bitte schließen Sie ein Auge</string>
+    <string name="action_role">Rollen verwalten</string>
+    <string name="super_role">Superrolle</string>
+    <string name="new_role">Neue Rolle</string>
 </resources>

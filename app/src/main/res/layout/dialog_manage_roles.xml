@@ -17,8 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:hint="Neue Rolle"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:hint="@string/new_role"
             app:layout_constraintEnd_toStartOf="@+id/button_add_role_dialog"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -30,6 +29,14 @@
                 android:inputType="text"
                 android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkbox_is_super_role"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/super_role"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/new_role_input_layout" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_add_role_dialog"

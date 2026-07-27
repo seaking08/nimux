@@ -133,8 +133,11 @@ class ProductsRepository @Inject constructor() {
 
     suspend fun getAllProducts(): List<Product> = productDataSource.getAllProducts()
 
-    suspend fun getAllProductsByRole(role: String): List<Product> {
+    suspend fun getAllProductsByRole(role: String, isSuperUser: Boolean): List<Product> {
         val allProducts = productDataSource.getAllProducts()
+        if (isSuperUser) {
+            return allProducts
+        }
         return allProducts.filter { it.role == role }
     }
 
