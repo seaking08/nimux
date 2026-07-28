@@ -124,6 +124,14 @@ class AddUserFragment : Fragment() {
             if (it) requireView().performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
         }
 
+        viewModel.roleEmpty.observe(viewLifecycleOwner) { isRoleEmpty ->
+            if (isRoleEmpty) {
+                binding.roleInputLayout.error = getString(R.string.field_cant_be_empty)
+            } else {
+                binding.roleInputLayout.error = null
+            }
+        }
+
         viewModel.requirePin.observe(viewLifecycleOwner) {
             val pinLayout =
                 requireView().findViewById<ConstraintLayout>(R.id.pin_confirmation_layout)

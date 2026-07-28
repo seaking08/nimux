@@ -266,6 +266,13 @@ class AddProductFragment : Fragment() {
                 binding.addProductInputName.error = null
             }
         }
+        viewModel.productRoleEmpty.observe(viewLifecycleOwner) { isEmpty ->
+            if (isEmpty) {
+                binding.roleInputLayout.error = getString(R.string.field_cant_be_empty)
+            } else {
+                binding.roleInputLayout.error = null
+            }
+        }
         viewModel.productPriceEmpty.observe(viewLifecycleOwner) {
             if (it) {
                 binding.addProductInputPrice.error = getString(R.string.field_cant_be_empty)

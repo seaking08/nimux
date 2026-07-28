@@ -79,16 +79,17 @@
                     android:layout_marginTop="@dimen/group_seperation_margin"
                     android:layout_marginEnd="8dp"
                     android:hint="Rolle"
+                    app:errorEnabled="true"
                     app:layout_constraintEnd_toStartOf="@id/button_configure_roles"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/add_user_input_name">
 
                     <AutoCompleteTextView
                         android:id="@+id/role_autocomplete"
-                        android:text="@={viewModel.roleNameText}"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:text="@={viewModel.roleNameText}" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
