@@ -240,13 +240,6 @@
             android:padding="16dp"
             android:outlineAmbientShadowColor="@color/black">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:padding="5dp"
-                android:text="@string/changelog"
-                android:textSize="18sp" />
-
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 

@@ -410,4 +410,5 @@
     <string name="action_role">Manage roles</string>
     <string name="super_role">Superrole</string>
     <string name="new_role">New role</string>
+    <string name="add_new_role">Add role</string>
 </resources>

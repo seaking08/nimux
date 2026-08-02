@@ -125,7 +125,8 @@ class HomeFragment : Fragment(), UserAdapter.UserItemClickListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        adapter.stopListening()
+        if (::adapter.isInitialized) {
+        adapter.stopListening()}
     }
 
     override fun onItemClick(user: User, cardView: View) {

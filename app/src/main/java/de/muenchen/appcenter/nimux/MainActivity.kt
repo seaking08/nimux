@@ -355,15 +355,21 @@ class MainActivity : AppCompatActivity() {
     private fun validateTenant(uid: String) {
         lifecycleScope.launch {
             try {
-                val currentlyAssignedTenant = withContext(Dispatchers.IO) {
+                //Firebase data
+                val firebaseResult = withContext(Dispatchers.IO) {
                     sessionManager.syncSessionInfoWithFirebase(uid)
-                }.takeUnless { it == "null" }
+                }
+                val currentlyAssignedTenant = if (firebaseResult == "null") null else firebaseResult
 
-                val localTenant = sessionManager.getTenantId()
+                //Local Data
+                val localResult = sessionManager.getTenantId()
+                val localTenant = if (localResult == "null") null else localResult
 
                 Timber.d("Firebase tenant: $currentlyAssignedTenant, Local tenant: $localTenant")
 
-                if (currentlyAssignedTenant != localTenant) {
+                //Log out if different
+                if (currentlyAssignedTenant != null && localTenant != null && currentlyAssignedTenant != localTenant) {
+                    Timber.w("Tenant mismatch! Logging out. (Firebase: $currentlyAssignedTenant, Local: $localTenant)")
                     forceLogout()
                 } else {
                     updateUIState(true)
@@ -371,7 +377,6 @@ class MainActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Timber.e(e, "Failed to validate tenant")
-                forceLogout()
             }
         }
     }

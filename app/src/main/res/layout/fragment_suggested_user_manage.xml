@@ -25,6 +25,12 @@
                 android:text="Name"
                 android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium" />
 
+            <TextView
+                android:id="@+id/text_view_role"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"/>
+
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switch_credit"
                 android:layout_width="match_parent"
