@@ -121,7 +121,7 @@ class HomeProductFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            productsRepository.fixLegacyProductsWithoutRole()
+            //productsRepository.fixLegacyProductsWithoutRole()
 
             val userRole = binding.user?.role ?: ""
 
