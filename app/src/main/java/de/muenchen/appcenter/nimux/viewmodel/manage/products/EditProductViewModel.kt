@@ -21,8 +21,8 @@ class EditProductViewModel @Inject constructor(
 
     var product: Product = savedStateHandle.get<Product>("product")
         ?: error("Product missing in SavedStateHandle")
+    val productIconId = MutableLiveData(product.productIcon)
 
-    val productIcon = MutableLiveData(product.productIcon)
     val productRefillSize = MutableLiveData(product.refillSize.toString())
     val productStock = MutableLiveData(product.currentStock.toString())
 
@@ -105,14 +105,14 @@ class EditProductViewModel @Inject constructor(
                 _networkHint.value = false
 
                 val finalPrice = (parsedPrice ?: 0.0).round(2)
-                val finalIcon = productIcon.value ?: 0
+                val finalIconId = productIconId.value ?: 0
                 val finalStock = if (isRefillable) (parsedStock ?: 0) else 0
                 val finalRefill = if (isRefillable) (parsedRefill ?: 0) else 0
 
                 productsRepository.updateProduct(
                     product.stringSortID,
                     finalPrice,
-                    finalIcon,
+                    finalIconId,
                     finalStock,
                     finalRefill,
                     finalRoleName

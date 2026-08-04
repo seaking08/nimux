@@ -35,7 +35,9 @@ class AddProductViewModel @Inject constructor(
 
     val productName = MutableLiveData("")
     val productPrice = MutableLiveData("")
-    val productIcon = MutableLiveData(0)
+
+    val productIconId = MutableLiveData(0)
+
     val productStock = MutableLiveData("")
     val productRefillSize = MutableLiveData("")
 
@@ -116,24 +118,24 @@ class AddProductViewModel @Inject constructor(
                 if (productsRepository.productExists(name)) {
                     productNameExists.value = true
                 } else {
-                    val price = parsedPrice ?: 0.0
-                    val icon = productIcon.value ?: 0
+                    val price = parsedPrice
+                    val iconId = productIconId.value ?: 0
 
                     if (isRefillable) {
                         productsRepository.addRefillableProduct(
                             name,
                             price,
-                            icon,
+                            iconId,
                             parsedStock ?: 0,
                             parsedRefill ?: 0,
-                            finalRole!!.name
+                            finalRole.name
                         )
                     } else {
                         productsRepository.addNonRefillableProduct(
                             name,
                             price,
-                            icon,
-                            finalRole!!
+                            iconId,
+                            finalRole
                         )
                     }
                     _productAdded.value = true

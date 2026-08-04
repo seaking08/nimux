@@ -121,4 +121,11 @@ dependencies {
 
     // used for logging
     implementation "com.jakewharton.timber:timber:5.0.1"
+
+// Core Bibliothek (aktualisiert für modernere Kotlin-Unterstützung)
+    implementation("com.mikepenz:iconics-core:5.4.0")
+// Community Material Design Icons (aktualisiert)
+    implementation("com.mikepenz:community-material-typeface:6.4.95.0-kotlin@aar")
+    // FontAwesome als zweite Bibliothek
+    implementation("com.mikepenz:fontawesome-typeface:5.13.3.1-kotlin@aar")
 }

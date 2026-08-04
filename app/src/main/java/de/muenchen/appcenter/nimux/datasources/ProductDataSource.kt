@@ -171,13 +171,32 @@ class ProductDataSource @Inject constructor(
             String.format(
                 productlog_description_update,
                 price.toString(),
-                productIcon.toString(),
+                productIcon,
                 currentStock.toString(),
                 refillSize.toString()
             )
         )
     }
 
+    //tmp just for me
+    suspend fun fixLegacyProductIcons() {
+        try {
+            val snapshot = requireCollectionProductRef().get(Source.SERVER).await()
+
+            for (document in snapshot.documents) {
+                val rawData = document.data
+
+                if (rawData != null && rawData["productIcon"] is Number) {
+
+                    document.reference.update("productIcon", "").await()
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e("Fehler bei der Icon-Migration: $e")
+        }
+    }
+
+    //tmp just for me
     suspend fun fixLegacyProductsWithoutRole() {
         try {
             val snapshot = requireCollectionProductRef().get(Source.SERVER).await()

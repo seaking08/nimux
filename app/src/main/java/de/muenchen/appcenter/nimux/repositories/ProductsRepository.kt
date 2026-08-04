@@ -68,8 +68,10 @@ class ProductsRepository @Inject constructor() {
         return baseQuery.whereIn("role", targetRoles.distinct())
     }
 
+    //TMP JUST FOR ME
     suspend fun fixLegacyProductsWithoutRole() {
         productDataSource.fixLegacyProductsWithoutRole()
+        productDataSource.fixLegacyProductIcons()
     }
 
     fun getUserStatQuery(userId: String): Query {
@@ -140,5 +142,4 @@ class ProductsRepository @Inject constructor() {
         }
         return allProducts.filter { it.role == role }
     }
-
 }

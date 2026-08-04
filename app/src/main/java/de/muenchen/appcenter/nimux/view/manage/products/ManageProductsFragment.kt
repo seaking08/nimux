@@ -30,9 +30,12 @@ import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentManageProductsBinding
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
-import de.muenchen.appcenter.nimux.util.getProductIcon
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.graphics.Color
+import com.mikepenz.iconics.IconicsDrawable
+import com.mikepenz.iconics.utils.colorInt
+import com.mikepenz.iconics.utils.sizeDp
 
 @AndroidEntryPoint
 class ManageProductsFragment : Fragment(), ManageProductsAdapter.OnItemClickListener {
@@ -166,6 +169,7 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
 
     inner class ManageProductsViewHolder internal constructor(private val view: View) :
         RecyclerView.ViewHolder(view) {
+
         internal fun setAttrs(
             name: String,
             price: Double,
@@ -205,15 +209,23 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
                 }
             }
 
-
-            //Doesn't work with a boolean value from the database, so i'm using the refillsize attribute for this
             view.findViewById<LinearLayout>(R.id.list_manage_product_amount_layout).visibility =
                 if (refillSize == 0) {
                     View.GONE
                 } else View.VISIBLE
 
-            view.findViewById<ImageView>(R.id.list_manage_product_icon)
-                .setImageResource(getProductIcon(productIcon))
+            val iconImageView = view.findViewById<ImageView>(R.id.list_manage_product_icon)
+            val iconName = iconMap[productIcon] ?: ""
+
+            if (iconName.isNotEmpty()) {
+                val drawable = IconicsDrawable(view.context, iconName).apply {
+                    colorInt = Color.DKGRAY
+                    sizeDp = 24
+                }
+                iconImageView.setImageDrawable(drawable)
+            } else {
+                iconImageView.setImageDrawable(null)
+            }
 
             view.findViewById<MaterialCardView>(R.id.manage_product_list_card).setOnClickListener {
                 val position = bindingAdapterPosition

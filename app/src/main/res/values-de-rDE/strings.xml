@@ -371,4 +371,5 @@
     <string name="super_role">Superrolle</string>
     <string name="new_role">Neue Rolle</string>
     <string name="add_new_role">Rolle hinzufügen</string>
+    <string name="back">Zurück</string>
 </resources>
