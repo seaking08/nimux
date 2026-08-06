@@ -51,6 +51,8 @@ This project uses the following open source libraries:
 - MPAndroidChart
 - Kotlin Coroutines
 - Timber
+- Community Material
+- Fontawesome
 
 All libraries are licensed under the Apache License 2.0 unless otherwise noted.
 

@@ -64,7 +64,7 @@ import kotlin.math.round
 
 const val collection_users = "users"
 const val collection_suggest_users = "suggest_users"
-const val collection_suggest_users_role = "user_roles"
+const val collection_suggest_users_role = "roles"
 const val collection_products = "products"
 const val collection_stats = "stats"
 const val collection_stats_total = "items"

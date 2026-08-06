@@ -108,7 +108,7 @@ class SignInFragment : Fragment() {
         viewModel.showPrivacyDialog.observe(viewLifecycleOwner) { show ->
 
             if (show) {
-                MaterialAlertDialogBuilder(requireContext())
+                /*MaterialAlertDialogBuilder(requireContext())
                     .setTitle("Datenschutzhinweis")
                     .setMessage(
                         "Zur Anmeldung wird Firebase Authentication verwendet. " +
@@ -133,7 +133,8 @@ class SignInFragment : Fragment() {
                         dialog.dismiss()
                         viewModel.loginConfirmed()
                     }
-                    .show()
+                    .show()*/
+                viewModel.loginConfirmed()
 
             }
 
