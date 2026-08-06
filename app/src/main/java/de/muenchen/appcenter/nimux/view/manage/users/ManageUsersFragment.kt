@@ -17,12 +17,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.ktx.toObject
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentManageUsersBinding
@@ -30,6 +26,8 @@ import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.viewmodel.manage.users.ManageUsersViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -53,9 +51,7 @@ class ManageUsersFragment : Fragment(), ManageUserAdapter.OnItemClickListener {
             container,
             false
         )
-
         setHasOptionsMenu(true)
-
         return binding.root
     }
 
@@ -81,27 +77,14 @@ class ManageUsersFragment : Fragment(), ManageUserAdapter.OnItemClickListener {
                 }
             }
         }
-
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onItemClick(documentSnapshot: DocumentSnapshot, position: Int) {
-        val currentUser: User = documentSnapshot.toObject()!!
+    override fun onItemClick(user: User, position: Int) {
         binding.userListRv.isVerticalScrollBarEnabled = false
         val action =
-            ManageUsersFragmentDirections.actionManageUsersFragmentToManageUserItem(currentUser)
+            ManageUsersFragmentDirections.actionManageUsersFragmentToManageUserItem(user)
         findNavController().navigate(action)
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-        adapter.startListening()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        adapter.stopListening()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -128,71 +111,76 @@ class ManageUsersFragment : Fragment(), ManageUserAdapter.OnItemClickListener {
                 }
             })
         }
-        val userQuery = usersRepository.getUserRVQuery()
-        val options =
-            FirestoreRecyclerOptions.Builder<User>().setQuery(userQuery, User::class.java).build()
 
-        adapter = ManageUserAdapter(options)
+        adapter = ManageUserAdapter(emptyList(), this)
         binding.userListRv.adapter = adapter
-        adapter.stateRestorationPolicy =
-            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
-        adapter.setOnItemClickListener(this)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val querySnapshot = usersRepository.getUserRVQuery().get().await()
+                val usersList = querySnapshot.toObjects(User::class.java)
+
+                adapter.updateData(usersList)
+            } catch (e: Exception) {
+                Timber.e(e, "Fehler beim Laden der Benutzer")
+            }
+        }
 
         viewModel.navToAddUser.observe(viewLifecycleOwner) { navToAddUser ->
             if (navToAddUser) {
                 findNavController().navigate(R.id.action_manageUsersFragment_to_addUserFragment)
             }
         }
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
 
-class ManageUserAdapter internal constructor(options: FirestoreRecyclerOptions<User>) :
-    FirestoreRecyclerAdapter<User, ManageUserAdapter.ManageUserViewHolder>(options) {
+class ManageUserAdapter(
+    private var users: List<User>,
+    private val listener: OnItemClickListener
+) : RecyclerView.Adapter<ManageUserAdapter.ManageUserViewHolder>() {
 
-    private lateinit var listener: OnItemClickListener
+    fun updateData(newUsers: List<User>) {
+        users = newUsers
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ManageUserViewHolder {
-        val view =
-            LayoutInflater.from(parent.context)
-                .inflate(R.layout.list_manage_user_view, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.list_manage_user_view, parent, false)
         return ManageUserViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ManageUserViewHolder, position: Int, model: User) {
-        holder.setAttrs(model.name, model.role, model.toPay)
+    override fun onBindViewHolder(holder: ManageUserViewHolder, position: Int) {
+        holder.setAttrs(users[position])
     }
 
-    inner class ManageUserViewHolder internal constructor(private val view: View) :
-        RecyclerView.ViewHolder(view) {
-        internal fun setAttrs(
-            userName: String,
-            userRole: String?,
-            userPay: Double,
-        ) {
-            view.findViewById<TextView>(R.id.list_user_name).text = userName
-            view.findViewById<TextView>(R.id.list_user_role).text = userRole ?: "Keine Rolle"
+    override fun getItemCount(): Int = users.size
+
+    inner class ManageUserViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
+        fun setAttrs(user: User) {
+            view.findViewById<TextView>(R.id.list_user_name).text = user.name
+            view.findViewById<TextView>(R.id.list_user_role).text = user.roles.joinToString(", ")
             view.findViewById<TextView>(R.id.list_user_pay).text =
                 (view.resources.getString(R.string.credit) + " " + String.format(
                     "%.2f",
-                    userPay
+                    user.toPay
                 ) + "€")
 
             view.findViewById<MaterialCardView>(R.id.manage_user_list_card).setOnClickListener {
-                val position = layoutPosition
+                val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    listener.onItemClick(snapshots.getSnapshot(position), position)
+                    listener.onItemClick(users[position], position)
                 }
             }
         }
     }
 
     interface OnItemClickListener {
-        fun onItemClick(documentSnapshot: DocumentSnapshot, position: Int)
-    }
-
-    fun setOnItemClickListener(onItemClickListener: OnItemClickListener) {
-        this.listener = onItemClickListener
+        fun onItemClick(user: User, position: Int)
     }
 }

@@ -70,14 +70,15 @@ class EditUserFragment : Fragment() {
 
         roleManager = RoleManager(
             fragment = this,
-            roleAutoComplete = binding.roleAutocomplete,
             dataSource = userSuggestionDataSource
-        )
+        ).also { it.initialize() }
 
-        roleManager.initialize()
+        roleManager = RoleManager(this, userSuggestionDataSource).also { it.initialize() }
 
-        binding.buttonConfigureRoles.setOnClickListener {
-            roleManager.showRoleConfigurationDialog()
+        binding.roleInputEditText.setOnClickListener {
+            roleManager.showMultiSelectRoleDialog(viewModel.selectedRoles.value ?: emptySet()) { updatedRoles ->
+                viewModel.updateSelectedRoles(updatedRoles)
+            }
         }
 
         setUpFacialRecognitionButtons()

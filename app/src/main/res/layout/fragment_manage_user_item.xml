@@ -6,6 +6,7 @@
     <data>
 
         <import type="android.view.View" />
+        <import type="android.text.TextUtils" />
 
         <variable
             name="viewModel"
@@ -51,7 +52,7 @@
                     android:id="@+id/manage_user_role"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{viewModel.user.role}"
+                    android:text="@{TextUtils.join(`, `, viewModel.user.roles)}"
                     android:textAppearance="?textAppearanceBody1"
                     android:textColor="?colorOnBackground"
                     app:layout_constraintStart_toStartOf="parent"

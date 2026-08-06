@@ -3,6 +3,7 @@ package de.muenchen.appcenter.nimux.viewmodel.manage.users
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.muenchen.appcenter.nimux.model.Role
@@ -18,11 +19,20 @@ class AddUserViewModel @Inject constructor(
 ) : ViewModel() {
 
     val nameText = MutableLiveData("")
-    val roleNameText = MutableLiveData("")
     val pinText = MutableLiveData("")
     val confirmPinText = MutableLiveData("")
 
-    var role: Role = Role(name = "")
+    private val _selectedRoles = MutableLiveData<Set<String>>(emptySet())
+    val selectedRoles: LiveData<Set<String>> get() = _selectedRoles
+
+    val selectedRolesText: LiveData<String> = _selectedRoles.map { roles ->
+        if (roles.isEmpty()) "" else roles.joinToString(", ")
+    }
+
+    fun updateSelectedRoles(newRoles: Set<String>) {
+        _selectedRoles.value = newRoles
+    }
+
     private lateinit var newUser: User
 
     private val _nameEntered = MutableLiveData<Boolean>()
@@ -69,12 +79,12 @@ class AddUserViewModel @Inject constructor(
 
     fun addUserClick() {
         val name = nameText.value.orEmpty().trim()
-        val roleText = roleNameText.value.orEmpty().trim()
+        val currentRoles = _selectedRoles.value ?: emptySet()
         val pin = pinText.value.orEmpty()
         val confirmPin = confirmPinText.value.orEmpty()
 
         val isNameEntered = name.isNotBlank()
-        val isRoleEntered = roleText.isNotBlank()
+        val isRoleEntered = true // oder: currentRoles.isNotEmpty()
 
         _nameEntered.value = isNameEntered
         _roleEmpty.value = !isRoleEntered
@@ -82,8 +92,6 @@ class AddUserViewModel @Inject constructor(
         if (!isNameEntered || !isRoleEntered) {
             return
         }
-
-        val finalRoleName = roleText.ifBlank { role.name }
 
         if (requirePin.value == true) {
             val isPinValid = pin.length == 4 && pin.toIntOrNull() != null
@@ -95,7 +103,7 @@ class AddUserViewModel @Inject constructor(
             if (isPinValid && isPinMatch) {
                 newUser = User(
                     name = name,
-                    role = finalRoleName,
+                    roles = currentRoles.toList(),
                     showCredit = showCredit.value ?: true,
                     collectData = processData.value ?: true,
                     pin = md5(pin)
@@ -106,7 +114,7 @@ class AddUserViewModel @Inject constructor(
             _pinEntered.value = true
             newUser = User(
                 name = name,
-                role = finalRoleName,
+                roles = currentRoles.toList(),
                 showCredit = showCredit.value ?: true,
                 collectData = processData.value ?: true
             )

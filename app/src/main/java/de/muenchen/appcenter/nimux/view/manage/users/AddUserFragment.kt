@@ -13,6 +13,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentAddUserBinding
@@ -54,12 +55,15 @@ class AddUserFragment : Fragment() {
 
         roleManager = RoleManager(
             fragment = this,
-            roleAutoComplete = binding.roleAutocomplete,
             dataSource = userSuggestionDataSource
         ).also { it.initialize() }
 
-        binding.buttonConfigureRoles.setOnClickListener {
-            roleManager?.showRoleConfigurationDialog()
+        roleManager = RoleManager(this, userSuggestionDataSource).also { it.initialize() }
+
+        binding.roleInputEditText.setOnClickListener {
+            roleManager?.showMultiSelectRoleDialog(viewModel.selectedRoles.value ?: emptySet()) { updatedRoles ->
+                viewModel.updateSelectedRoles(updatedRoles)
+            }
         }
     }
 

@@ -19,7 +19,7 @@ data class User(
     var emojiIcon: String? = null,
     var boldEnabled: Boolean? = null,
     var nameColor: NameColors? = null,
-    val role: String? = ""
+    val roles: List<String> = emptyList()
 ) : Parcelable
 
 @Parcelize

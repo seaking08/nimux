@@ -58,8 +58,8 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/list_manage_product_role"
                         android:layout_marginTop="8dp"
-                        android:text="@{product.role}"
-                        android:visibility="@{TextUtils.isEmpty(product.role) ? View.GONE : View.VISIBLE}"
+                        android:text="@{TextUtils.join(`, `, product.roles)}"
+                        android:visibility="@{TextUtils.isEmpty(product.roles.toString()) ? View.GONE : View.VISIBLE}"
                         android:textColor="?android:attr/textColorSecondary"
                         android:textAppearance="?attr/textAppearanceBody2"
                         tools:text="Administrator"/>

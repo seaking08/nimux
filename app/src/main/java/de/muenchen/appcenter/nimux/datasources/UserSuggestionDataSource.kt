@@ -20,6 +20,8 @@ class UserSuggestionDataSource @Inject constructor(
 ) {
     @Inject
     lateinit var userDataSource: UserDataSource
+    @Inject
+    lateinit var productDataSoure: ProductDataSource
 
     private val userSuggestionsRef
         get() = tenantRefProvider.get()
@@ -106,6 +108,10 @@ class UserSuggestionDataSource @Inject constructor(
     }
 
     suspend fun deleteRole(role: Role) {
-        userRolesRef.document(role.name).delete().await()
+        val roleName = role.name
+
+        userRolesRef.document(roleName).delete().await()
+        userDataSource.deleteRoleFromUser(role.name)
+        productDataSoure.deleteRoleFromProduct(role.name)
     }
 }

@@ -14,6 +14,7 @@ import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.model.TotalStatsDoc
 import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.model.updateTotalStatDoc
+import de.muenchen.appcenter.nimux.util.await
 import de.muenchen.appcenter.nimux.util.coll_stats_main_doc
 import de.muenchen.appcenter.nimux.util.collection_productLogs
 import de.muenchen.appcenter.nimux.util.collection_products
@@ -154,14 +155,14 @@ class ProductDataSource @Inject constructor(
         productIcon: Int,
         currentStock: Int,
         refillSize: Int,
-        role: String?
+        roles: List<String>
     ) {
         val updates = hashMapOf<String, Any?>(
             "price" to price,
             "productIcon" to productIcon,
             "currentStock" to currentStock,
             "refillSize" to refillSize,
-            "role" to role
+            "roles" to roles
         )
 
         requireCollectionProductRef().document(id).update(updates).await()
@@ -180,13 +181,13 @@ class ProductDataSource @Inject constructor(
 
     suspend fun fixLegacyProductsWithoutRole() {
         try {
-            val snapshot = requireCollectionProductRef().get(Source.SERVER).await()
+            /*val snapshot = requireCollectionProductRef().get(Source.SERVER).await()
 
             for (document in snapshot.documents) {
                 if (!document.contains("role") || document.get("role") == null) {
                     document.reference.update("role", "").await()
                 }
-            }
+            }*/
         } catch (e: Exception) {
             Timber.e("Fehler bei Server-Abfrage")
         }
@@ -206,6 +207,17 @@ class ProductDataSource @Inject constructor(
     private fun logProductAction(id: String, description: String, amount: Int = 0) {
         val log = ProductLog(id, description, amount)
         requireCollectionProductLogsRef().add(log)
+    }
+
+    suspend fun deleteRoleFromProduct(roleName: String) {
+        val productsSnapshot = requireCollectionProductRef().get().await()
+        for (document in productsSnapshot.documents) {
+            val product = document.toObject(Product::class.java)
+            if (product?.roles != null && product.roles.contains(roleName)) {
+                val updatedRoles = product.roles.toMutableList().apply { remove(roleName) }
+                document.reference.update("roles", updatedRoles).await()
+            }
+        }
     }
 
     suspend fun productBought(

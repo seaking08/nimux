@@ -411,4 +411,9 @@
     <string name="super_role">Superrole</string>
     <string name="new_role">New role</string>
     <string name="add_new_role">Add role</string>
+    <string name="all_categories">All categories</string>
+    <string name="no_category">No category</string>
+    <string name="max_roles">Only three roles are allowed</string>
+    <string name="delete_role">Are you sure about deleting this role? The role will be removed from user und products afterwards.</string>
+    <string name="no_role">No role selected</string>
 </resources>

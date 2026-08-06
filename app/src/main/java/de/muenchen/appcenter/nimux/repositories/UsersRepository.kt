@@ -60,9 +60,9 @@ class UsersRepository @Inject constructor() {
         useProductAI: Boolean,
         faceSkipsPin: Boolean,
         faceFeatureNeeded: Boolean,
-        role: String?
+        roles: List<String>
     ) {
-        userDataSource.updateUser(id, showCredit, collectData, pin, useProductAI, faceSkipsPin, faceFeatureNeeded, role)
+        userDataSource.updateUser(id, showCredit, collectData, pin, useProductAI, faceSkipsPin, faceFeatureNeeded, roles)
     }
 
     fun updateUserMail(id: String, mail: String) {
@@ -113,11 +113,11 @@ class UsersRepository @Inject constructor() {
         userDataSource.payMultiProduct(userID, multiOrderProductListWithProduct)
     }
 
-    suspend fun isSuperRole(roleName: String): Boolean {
-        if (roleName.isBlank()) return false
-
-        val roles = userSuggestionDataSource.getRolesFlow().first()
-
-        return roles.find { it.name.equals(roleName, ignoreCase = true) }?.superRole ?: false
+    suspend fun isSuperRole(roles: List<String>): Boolean {
+        if (roles.isEmpty()) return false
+        val allRoles = userSuggestionDataSource.getRolesFlow().first()
+        return roles.any { roleName ->
+            allRoles.find { it.name.equals(roleName, ignoreCase = true) }?.superRole == true
+        }
     }
 }

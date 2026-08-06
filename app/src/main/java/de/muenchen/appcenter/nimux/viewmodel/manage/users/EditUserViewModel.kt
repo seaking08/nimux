@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.muenchen.appcenter.nimux.model.User
@@ -21,23 +22,27 @@ class EditUserViewModel @Inject constructor(
     var user: User = savedStateHandle.get<User>("currentUser")
         ?: error("User missing in SavedStateHandle")
 
-    var selectedRole: String = user.role ?: ""
+    private val _selectedRoles = MutableLiveData<Set<String>>(user.roles?.toSet() ?: emptySet())
+    val selectedRoles: LiveData<Set<String>> get() = _selectedRoles
+
+    val selectedRolesText: LiveData<String> = _selectedRoles.map { roles ->
+        if (roles.isEmpty()) "" else roles.joinToString(", ")
+    }
+
+    fun updateSelectedRoles(newRoles: Set<String>) {
+        _selectedRoles.value = newRoles
+    }
 
     private val _showCredit = MutableLiveData(user.showCredit)
-    val showCredit: LiveData<Boolean>
-        get() = _showCredit
+    val showCredit: LiveData<Boolean> get() = _showCredit
     private val _processData = MutableLiveData(user.collectData)
-    val processData: LiveData<Boolean>
-        get() = _processData
+    val processData: LiveData<Boolean> get() = _processData
     private val _requirePin = MutableLiveData(user.pin != null)
-    val requirePin: LiveData<Boolean>
-        get() = _requirePin
+    val requirePin: LiveData<Boolean> get() = _requirePin
     private val _makeNewPin = MutableLiveData(false)
-    val makeNewPIN: LiveData<Boolean>
-        get() = _makeNewPin
+    val makeNewPIN: LiveData<Boolean> get() = _makeNewPin
     private val _changePin = MutableLiveData(user.pin != null)
-    val changePin: LiveData<Boolean>
-        get() = _changePin
+    val changePin: LiveData<Boolean> get() = _changePin
 
     private val _useProductAI: MutableLiveData<Boolean> =
         if (user.useProductAI != null) MutableLiveData(user.useProductAI)
@@ -53,31 +58,26 @@ class EditUserViewModel @Inject constructor(
     var confirmNewPinText: String = ""
 
     private val _showProgressBar = MutableLiveData(false)
-    val showProgressBar: LiveData<Boolean>
-        get() = _showProgressBar
+    val showProgressBar: LiveData<Boolean> get() = _showProgressBar
 
     private val _showNetworkHint = MutableLiveData(false)
-    val showNetworkHint: LiveData<Boolean>
-        get() = _showNetworkHint
+    val showNetworkHint: LiveData<Boolean> get() = _showNetworkHint
 
     private val _oldPinEmptyOrFalse = MutableLiveData<Boolean>()
-    val oldPinEmptyOrFalse: LiveData<Boolean>
-        get() = _oldPinEmptyOrFalse
+    val oldPinEmptyOrFalse: LiveData<Boolean> get() = _oldPinEmptyOrFalse
+
     private val _newPinEmptyOrFalse = MutableLiveData<Boolean>()
-    val newPinEmptyOrFalse: LiveData<Boolean>
-        get() = _newPinEmptyOrFalse
+    val newPinEmptyOrFalse: LiveData<Boolean> get() = _newPinEmptyOrFalse
+
     private val _confirmPinEmptyOrFalse = MutableLiveData<Boolean>()
-    val confirmPinEmptyOrFalse: LiveData<Boolean>
-        get() = _confirmPinEmptyOrFalse
+    val confirmPinEmptyOrFalse: LiveData<Boolean> get() = _confirmPinEmptyOrFalse
 
 
     private val _enterPinToDeactivate = MutableLiveData<Boolean>()
-    val enterPinToDeactivate: LiveData<Boolean>
-        get() = _enterPinToDeactivate
+    val enterPinToDeactivate: LiveData<Boolean> get() = _enterPinToDeactivate
 
     private val _updated = MutableLiveData<Boolean>()
-    val updated: LiveData<Boolean>
-        get() = _updated
+    val updated: LiveData<Boolean> get() = _updated
 
     fun switchRequirePin() {
         _requirePin.value = !requirePin.value!!
@@ -155,11 +155,15 @@ class EditUserViewModel @Inject constructor(
                 _confirmPinEmptyOrFalse.value = false
             }
         }
+
         if (pinIsConfirmed && !oldPinEmptyOrFalse.value!! && !newPinEmptyOrFalse.value!! && !confirmPinEmptyOrFalse.value!!) {
+            val finalRoles: List<String> = _selectedRoles.value?.toList() ?: emptyList()
+
             viewModelScope.launch {
                 _showProgressBar.value = true
                 if (usersRepository.connectedOnline()) {
                     _showNetworkHint.value = false
+
                     usersRepository.updateUser(
                         user.stringSortID,
                         stateShowCredit!!,
@@ -168,7 +172,7 @@ class EditUserViewModel @Inject constructor(
                         useProdAi ?: false,
                         facePinSkipper ?: false,
                         faceFeatureNeeded ?: false,
-                        selectedRole
+                        finalRoles
                     )
                 } else _showNetworkHint.value = true
                 _showProgressBar.value = false
@@ -204,16 +208,14 @@ class EditUserViewModel @Inject constructor(
     }
 
     private val _canceled = MutableLiveData<Boolean>()
-    val canceled: LiveData<Boolean>
-        get() = _canceled
+    val canceled: LiveData<Boolean> get() = _canceled
 
     fun cancel() {
         _canceled.value = true
     }
 
     private val _hideKeyboard = MutableLiveData<Boolean>()
-    val hideKeyboard: LiveData<Boolean>
-        get() = _hideKeyboard
+    val hideKeyboard: LiveData<Boolean> get() = _hideKeyboard
 
     private fun doHideKeyboard() {
         _hideKeyboard.value = true

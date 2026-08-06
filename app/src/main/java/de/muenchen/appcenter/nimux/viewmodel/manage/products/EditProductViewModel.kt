@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.muenchen.appcenter.nimux.model.Product
-import de.muenchen.appcenter.nimux.model.Role
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.util.round
 import kotlinx.coroutines.launch
@@ -31,10 +31,16 @@ class EditProductViewModel @Inject constructor(
 
     val priceInput = MutableLiveData(String.format("%.2f", product.price))
 
-    val roleNameText = MutableLiveData(product.role ?: "")
+    private val _selectedRoles = MutableLiveData<Set<String>>(product.roles?.toSet() ?: emptySet())
+    val selectedRoles: LiveData<Set<String>> get() = _selectedRoles
 
-    var selectedRole: Role? = product.role?.let { Role(name = it) }
-        private set
+    val selectedRolesText: LiveData<String> = _selectedRoles.map { roles ->
+        if (roles.isEmpty()) "" else roles.joinToString(", ")
+    }
+
+    fun updateSelectedRoles(newRoles: Set<String>) {
+        _selectedRoles.value = newRoles
+    }
 
     fun changeRefill() {
         doHideKeyboard()
@@ -42,37 +48,25 @@ class EditProductViewModel @Inject constructor(
     }
 
     private val _priceInputWrong = MutableLiveData<Boolean>()
-    val priceInputWrong: LiveData<Boolean>
-        get() = _priceInputWrong
+    val priceInputWrong: LiveData<Boolean> get() = _priceInputWrong
 
     private val _stockInputWrong = MutableLiveData<Boolean>()
-    val stockInputWrong: LiveData<Boolean>
-        get() = _stockInputWrong
+    val stockInputWrong: LiveData<Boolean> get() = _stockInputWrong
 
     private val _refillInputWrong = MutableLiveData<Boolean>()
-    val refillInputWrong: LiveData<Boolean>
-        get() = _refillInputWrong
+    val refillInputWrong: LiveData<Boolean> get() = _refillInputWrong
 
     private val _canceled = MutableLiveData<Boolean>()
-    val canceled: LiveData<Boolean>
-        get() = _canceled
+    val canceled: LiveData<Boolean> get() = _canceled
 
     private val _updated = MutableLiveData<Boolean>()
-    val updated: LiveData<Boolean>
-        get() = _updated
+    val updated: LiveData<Boolean> get() = _updated
 
     private val _networkHint = MutableLiveData<Boolean>()
-    val networkHint: LiveData<Boolean>
-        get() = _networkHint
+    val networkHint: LiveData<Boolean> get() = _networkHint
 
     private val _showProgressBar = MutableLiveData<Boolean>()
-    val showProgressBar: LiveData<Boolean>
-        get() = _showProgressBar
-
-    fun setSelectedRole(roleName: String, isSuperRole: Boolean = false) {
-        this.selectedRole = Role(name = roleName, superRole = isSuperRole)
-        this.roleNameText.value = roleName
-    }
+    val showProgressBar: LiveData<Boolean> get() = _showProgressBar
 
     fun updateProduct() {
         val isRefillable = _refillable.value ?: false
@@ -96,8 +90,7 @@ class EditProductViewModel @Inject constructor(
 
         if (!isValid) return
 
-        val nameText = roleNameText.value?.trim() ?: ""
-        val finalRoleName: String? = nameText.ifBlank { null }
+        val finalRoles: List<String> = _selectedRoles.value?.toList() ?: emptyList()
 
         viewModelScope.launch {
             _showProgressBar.value = true
@@ -115,7 +108,7 @@ class EditProductViewModel @Inject constructor(
                     finalIcon,
                     finalStock,
                     finalRefill,
-                    finalRoleName
+                    finalRoles
                 )
             } else {
                 _networkHint.value = true
@@ -136,8 +129,7 @@ class EditProductViewModel @Inject constructor(
     }
 
     private val _hideKeyboard = MutableLiveData<Boolean>()
-    val hideKeyboard: LiveData<Boolean>
-        get() = _hideKeyboard
+    val hideKeyboard: LiveData<Boolean> get() = _hideKeyboard
 
     private fun doHideKeyboard() {
         _hideKeyboard.value = true

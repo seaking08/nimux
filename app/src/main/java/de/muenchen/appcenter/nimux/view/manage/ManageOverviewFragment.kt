@@ -47,11 +47,8 @@ class ManageOverviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val dummyAutoComplete = AutoCompleteTextView(requireContext())
-
         roleManager = RoleManager(
             fragment = this,
-            roleAutoComplete = dummyAutoComplete,
             dataSource = userSuggestionDataSource
         )
 

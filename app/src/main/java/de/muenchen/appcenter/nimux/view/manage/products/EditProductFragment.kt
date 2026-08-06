@@ -63,17 +63,16 @@ class EditProductFragment : Fragment() {
 
         roleManager = RoleManager(
             fragment = this,
-            roleAutoComplete = binding.roleAutocomplete,
             dataSource = userSuggestionDataSource
         ).also { it.initialize() }
 
-        binding.buttonConfigureRoles.setOnClickListener {
-            roleManager?.showRoleConfigurationDialog()
-        }
+        roleManager = RoleManager(this, userSuggestionDataSource).also { it.initialize() }
 
-        binding.roleAutocomplete.setOnItemClickListener { parent, _, position, _ ->
-            val selectedRoleName = parent.getItemAtPosition(position) as String
-            viewModel.setSelectedRole(selectedRoleName)
+        binding.roleInputEditText.setOnClickListener {
+            roleManager?.showMultiSelectRoleDialog(viewModel.selectedRoles.value ?: emptySet()) { updatedRoles ->
+                viewModel.updateSelectedRoles(updatedRoles)
+            }
+
         }
 
         binding.editProductTitle.text = getString(R.string.edit_title, viewModel.product.name)

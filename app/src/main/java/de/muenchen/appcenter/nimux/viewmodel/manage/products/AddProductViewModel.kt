@@ -3,9 +3,9 @@ package de.muenchen.appcenter.nimux.viewmodel.manage.products
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.muenchen.appcenter.nimux.model.Role
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import kotlinx.coroutines.launch
@@ -18,20 +18,16 @@ class AddProductViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _addProductDone = MutableLiveData<Boolean>()
-    val addProductDone: LiveData<Boolean>
-        get() = _addProductDone
+    val addProductDone: LiveData<Boolean> get() = _addProductDone
 
     private val _productAdded = MutableLiveData<Boolean>()
-    val productAdded: LiveData<Boolean>
-        get() = _productAdded
+    val productAdded: LiveData<Boolean> get() = _productAdded
 
     private val _hideKeyboard = MutableLiveData<Boolean>()
-    val hideKeyboard: LiveData<Boolean>
-        get() = _hideKeyboard
+    val hideKeyboard: LiveData<Boolean> get() = _hideKeyboard
 
     private val _refillable = MutableLiveData(false)
-    val refillable: LiveData<Boolean>
-        get() = _refillable
+    val refillable: LiveData<Boolean> get() = _refillable
 
     val productName = MutableLiveData("")
     val productPrice = MutableLiveData("")
@@ -39,20 +35,25 @@ class AddProductViewModel @Inject constructor(
     val productStock = MutableLiveData("")
     val productRefillSize = MutableLiveData("")
 
-    val roleNameText = MutableLiveData("")
 
-    var selectedRole: Role? = null
-        private set
+    private val _selectedRoles = MutableLiveData<Set<String>>(emptySet())
+    val selectedRoles: LiveData<Set<String>> get() = _selectedRoles
+
+    val selectedRolesText: LiveData<String> = _selectedRoles.map { roles ->
+        if (roles.isEmpty()) "" else roles.joinToString(", ")
+    }
+
+    fun updateSelectedRoles(newRoles: Set<String>) {
+        _selectedRoles.value = newRoles
+    }
 
     private val _performHapticFeedback = MutableLiveData<Boolean>()
-    val performHapticFeedback: LiveData<Boolean>
-        get() = _performHapticFeedback
+    val performHapticFeedback: LiveData<Boolean> get() = _performHapticFeedback
 
     val productNameEmpty = MutableLiveData<Boolean>()
     val productPriceEmpty = MutableLiveData<Boolean>()
     val productStockEmpty = MutableLiveData<Boolean>()
     val productRefillSizeEmpty = MutableLiveData<Boolean>()
-    val productRoleEmpty = MutableLiveData<Boolean>()
 
     val productPriceWrong = MutableLiveData<Boolean>()
     val productStockWrong = MutableLiveData<Boolean>()
@@ -61,34 +62,29 @@ class AddProductViewModel @Inject constructor(
     val productNameExists = MutableLiveData<Boolean>()
 
     private val _networkHint = MutableLiveData<Boolean>()
-    val networkHint: LiveData<Boolean>
-        get() = _networkHint
+    val networkHint: LiveData<Boolean> get() = _networkHint
 
     private val _showProgressBar = MutableLiveData<Boolean>()
-    val showProgressBar: LiveData<Boolean>
-        get() = _showProgressBar
+    val showProgressBar: LiveData<Boolean> get() = _showProgressBar
 
     fun addProduct() {
         val name = productName.value.orEmpty().trim()
         val priceStr = productPrice.value.orEmpty()
         val stockStr = productStock.value.orEmpty()
         val refillStr = productRefillSize.value.orEmpty()
-        val roleText = roleNameText.value.orEmpty().trim()
         val isRefillable = refillable.value ?: false
 
         val nameIsEmpty = name.isEmpty()
         val priceIsEmpty = priceStr.isEmpty()
         val stockIsEmpty = isRefillable && stockStr.isEmpty()
         val refillIsEmpty = isRefillable && refillStr.isEmpty()
-        val roleIsEmpty = roleText.isEmpty()
 
         productNameEmpty.value = nameIsEmpty
         productPriceEmpty.value = priceIsEmpty
         productStockEmpty.value = stockIsEmpty
         productRefillSizeEmpty.value = refillIsEmpty
-        productRoleEmpty.value = roleIsEmpty
 
-        if (nameIsEmpty || priceIsEmpty || stockIsEmpty || refillIsEmpty || roleIsEmpty) {
+        if (nameIsEmpty || priceIsEmpty || stockIsEmpty || refillIsEmpty) {
             return
         }
 
@@ -108,7 +104,7 @@ class AddProductViewModel @Inject constructor(
             return
         }
 
-        val finalRole: Role = selectedRole?.copy(name = roleText) ?: Role(name = roleText)
+        val finalRoles: List<String> = _selectedRoles.value?.toList() ?: emptyList()
 
         viewModelScope.launch {
             _showProgressBar.value = true
@@ -126,14 +122,14 @@ class AddProductViewModel @Inject constructor(
                             icon,
                             parsedStock ?: 0,
                             parsedRefill ?: 0,
-                            finalRole!!.name
+                            finalRoles
                         )
                     } else {
                         productsRepository.addNonRefillableProduct(
                             name,
                             price,
                             icon,
-                            finalRole!!
+                            finalRoles
                         )
                     }
                     _productAdded.value = true

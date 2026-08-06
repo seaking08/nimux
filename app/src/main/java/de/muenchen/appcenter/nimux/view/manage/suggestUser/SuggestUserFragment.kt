@@ -8,16 +8,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentSuggestUserBinding
 import de.muenchen.appcenter.nimux.datasources.UserDataSource
 import de.muenchen.appcenter.nimux.datasources.UserSuggestionDataSource
-import de.muenchen.appcenter.nimux.model.Role
 import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.view.manage.RoleManager
 import de.muenchen.appcenter.nimux.util.md5
+import de.muenchen.appcenter.nimux.viewmodel.manage.users.AddUserViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -28,6 +30,7 @@ class SuggestUserFragment : Fragment() {
 
     private var _binding: FragmentSuggestUserBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: AddUserViewModel by viewModels()
 
     @Inject
     lateinit var userSuggestionDataSource: UserSuggestionDataSource
@@ -42,6 +45,10 @@ class SuggestUserFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentSuggestUserBinding.inflate(inflater, container, false)
+
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+
         return binding.root
     }
 
@@ -55,19 +62,20 @@ class SuggestUserFragment : Fragment() {
 
         roleManager = RoleManager(
             fragment = this,
-            roleAutoComplete = binding.roleAutocomplete,
             dataSource = userSuggestionDataSource
-        )
+        ).also { it.initialize() }
 
-        roleManager.initialize()
+        roleManager = RoleManager(this, userSuggestionDataSource).also { it.initialize() }
+        binding.roleInputEditText.setOnClickListener {
+            roleManager.showMultiSelectRoleDialog(viewModel.selectedRoles.value ?: emptySet()) { updatedRoles ->
+                viewModel.updateSelectedRoles(updatedRoles)
+            }
+        }
 
         setupListeners()
     }
 
     private fun setupListeners() {
-        binding.buttonConfigureRoles.setOnClickListener {
-            roleManager.showRoleConfigurationDialog()
-        }
         binding.switchRequirePin.setOnCheckedChangeListener { _, checked ->
             if (checked) {
                 binding.constraintLayoutSelectPin.apply {
@@ -110,20 +118,17 @@ class SuggestUserFragment : Fragment() {
             val rawConfirmPin = binding.confirmPinTextLayout.editText?.text?.toString() ?: ""
 
             val pinInput = if (requirePin && rawPin.isNotBlank()) md5(rawPin) else null
-            val confirmPinInput = if (requirePin && rawConfirmPin.isNotBlank()) md5(rawConfirmPin) else null
 
-            val selectedRoleName = binding.roleAutocomplete.text.toString()
+            val selectedRoles = viewModel.selectedRoles.value ?: emptySet()
 
             if (allInputsCorrect(
                     name,
                     requirePin,
                     rawPin,
                     rawConfirmPin,
-                    selectedRoleName
                 )
             ) {
-                val selectedRoleObj = Role(name = selectedRoleName)
-                addUserSuggestion(name, showCredit, processData, pinInput, selectedRoleObj)
+                addUserSuggestion(name, showCredit, processData, pinInput, selectedRoles)
             }
         }
     }
@@ -133,7 +138,7 @@ class SuggestUserFragment : Fragment() {
         showCredit: Boolean,
         processData: Boolean,
         pinstring: String?,
-        selectedRole: Role,
+        selectedRoles: Set<String>,
     ) {
         binding.progressBar.show()
 
@@ -155,7 +160,7 @@ class SuggestUserFragment : Fragment() {
                             showCredit = showCredit,
                             collectData = processData,
                             pin = pinstring,
-                            role = selectedRole.name
+                            roles = selectedRoles.toList()
                         )
                     )
                     lifecycleScope.launch(Dispatchers.Main) {
@@ -168,7 +173,7 @@ class SuggestUserFragment : Fragment() {
                         binding.nameInputLayout.editText?.text?.clear()
                         binding.pinTextLayout.editText?.text?.clear()
                         binding.confirmPinTextLayout.editText?.text?.clear()
-                        binding.roleAutocomplete.setText("", false) // Dropdown leeren
+                        viewModel.updateSelectedRoles(emptySet())
                         binding.switchRequirePin.isChecked = false
                         binding.switchShowCredit.isChecked = true
                         binding.switchProcessData.isChecked = true
@@ -192,16 +197,8 @@ class SuggestUserFragment : Fragment() {
         requirePin: Boolean,
         rawPin: String,
         rawConfirmPin: String,
-        selectedRole: String
     ): Boolean {
         var isValid = true
-
-        if (selectedRole.isBlank()) {
-            binding.roleInputLayout.error = "Bitte wähle eine Rolle aus"
-            isValid = false
-        } else {
-            binding.roleInputLayout.error = null
-        }
 
         if (name.isBlank()) {
             binding.nameInputLayout.error = getString(R.string.add_user_name_error)

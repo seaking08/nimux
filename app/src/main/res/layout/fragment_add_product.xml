@@ -75,32 +75,24 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/role_input_layout"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/group_seperation_margin"
                     android:layout_marginEnd="8dp"
                     android:hint="Rolle"
-                    app:layout_constraintEnd_toStartOf="@id/button_configure_roles"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/add_product_input_name">
 
-                    <AutoCompleteTextView
-                        android:id="@+id/role_autocomplete"
-                        android:text="@={viewModel.roleNameText}"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/role_input_edit_text"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:focusable="false"
+                        android:cursorVisible="false"
+                        android:inputType="none"
+                        android:text="@{viewModel.selectedRolesText}" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_configure_roles"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Konfigurieren"
-                    app:layout_constraintBottom_toBottomOf="@id/role_input_layout"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/role_input_layout" />
 
                 <TextView
                     android:id="@+id/add_product_price_title"

@@ -160,7 +160,7 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
             model.currentStock,
             model.refillSize,
             model.productIcon,
-            model.role
+            model.roles
         )
     }
 
@@ -172,17 +172,17 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
             currentAmount: Int,
             refillSize: Int,
             productIcon: Int,
-            role: String?,
+            roles: List<String>?,
         ) {
             view.findViewById<TextView>(R.id.list_manage_product_name).text = name
             view.findViewById<TextView>(R.id.list_manage_product_price).text =
                 String.format(view.context.getString(R.string.money), price)
             val roleTextView = view.findViewById<TextView>(R.id.list_manage_product_role)
-            if (role.isNullOrEmpty()) {
+            if (roles.isNullOrEmpty()) {
                 roleTextView.visibility = View.GONE
             } else {
                 roleTextView.visibility = View.VISIBLE
-                roleTextView.text = role
+                roleTextView.text = roles.joinToString(", ")
             }
             view.findViewById<TextView>(R.id.list_manage_product_amount).apply {
                 text = currentAmount.toString()
@@ -206,7 +206,6 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
             }
 
 
-            //Doesn't work with a boolean value from the database, so i'm using the refillsize attribute for this
             view.findViewById<LinearLayout>(R.id.list_manage_product_amount_layout).visibility =
                 if (refillSize == 0) {
                     View.GONE

@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -28,15 +29,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.android.material.transition.MaterialContainerTransform
 import com.google.android.material.transition.MaterialFadeThrough
-import com.google.firebase.firestore.Query
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.HomeProductFragmentBinding
@@ -79,14 +77,15 @@ class HomeProductFragment : Fragment() {
 
     private var currentSelectedOption = 0
 
-    private lateinit var productQuery: Query
-    private lateinit var options: FirestoreRecyclerOptions<Product>
     private lateinit var productAdapter: ProductHomeAdapter
 
     private lateinit var multiOrderAdapter: MultiOrderProductAdapter
     private lateinit var multiOrderOverViewAdapter: MultiOrderOverviewAdapter
     private var productAmountList = mutableListOf<MultiOrderProductListWithProduct>()
     private var productAmountOverviewList = mutableListOf<MultiOrderProductListWithProduct>()
+
+    private var allProducts: List<Product> = emptyList()
+    private var selectedCategory: String? = null
 
     private val selectedDateTime = Calendar.getInstance()
     private var selectedAmount = 0.0
@@ -116,40 +115,154 @@ class HomeProductFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            productsRepository.fixLegacyProductsWithoutRole()
-
-            val userRole = binding.user?.role ?: ""
-
-            productQuery = productsRepository.getProductQueryByRole(
-                userRole,
-                usersRepository.isSuperRole(userRole)
-            )
-
-            options = FirestoreRecyclerOptions.Builder<Product>()
-                .setQuery(productQuery, Product::class.java)
-                .build()
-
-            productAdapter = ProductHomeAdapter(options)
-            productAdapter.startListening()
-
-            setUpSingleBuy()
-
-            postponeEnterTransition()
-            view.doOnPreDraw {
-                startPostponedEnterTransition()
-            }
-        }
-
+        setUpSingleBuy()
         binding.otherOptionsButtonHomeProduct.setOnClickListener { fab ->
             showFabPopUpMenu(fab, R.menu.home_product_other_options_menu)
         }
         binding.otherOptionsButtonHomeProduct.text = getString(R.string.single_buy_menu_title)
+
+        binding.categoryOptionsButtonHomeProduct.setOnClickListener { fab ->
+            showCategoryPopupMenu(fab)
+        }
+        binding.categoryOptionsButtonHomeProduct.text = getString(R.string.all_categories)
+
         binding.lifecycleOwner = viewLifecycleOwner
         (activity as AppCompatActivity)
             .supportActionBar
             ?.setDisplayHomeAsUpEnabled(false)
     }
+
+    private fun setUpSingleBuy() {
+        binding.homeProductRecyclerview.apply {
+            setHasFixedSize(true)
+
+            val metrics = resources.displayMetrics
+            if (::productAdapter.isInitialized) {
+                adapter = productAdapter
+            }
+
+            val yInches = metrics.heightPixels / metrics.ydpi
+            val xInches = metrics.widthPixels / metrics.xdpi
+            val diagonalInches = sqrt((xInches * xInches + yInches * yInches).toDouble())
+            layoutManager = if (diagonalInches >= 7) {
+                // 6.5inch device or bigger
+
+                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+                    GridLayoutManager(requireContext(), 3)
+                else
+                    GridLayoutManager(requireContext(), 2)
+            } else {
+                // smaller device
+                LinearLayoutManager(requireContext())
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            productsRepository.fixLegacyProductsWithoutRole()
+
+            val userRoles = binding.user?.roles ?: emptyList()
+            val isSuper = usersRepository.isSuperRole(userRoles)
+
+            val prodsForRole = productsRepository.getAllProductsByRole(userRoles, isSuper)
+            val prodsGeneral = if (userRoles.isNotEmpty()) {
+                productsRepository.getAllProductsByRole(emptyList(), false)
+            } else {
+                emptyList()
+            }
+
+            allProducts = (prodsForRole + prodsGeneral).distinctBy { it.stringSortID }
+
+            productAdapter =
+                ProductHomeAdapter(
+                    allProducts,
+                    object : ProductHomeAdapter.ProductItemClickListener {
+                        override fun onItemClick(product: Product, cardView: View) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                val donoActive = donateItemDataSource.getDonationItem(product.price)
+                                lifecycleScope.launch(Dispatchers.Main) {
+                                    if (donoActive != null) {
+                                        goToCheckout(product)
+                                    } else {
+                                        val comingFromFace =
+                                            HomeProductFragmentArgs.fromBundle(requireArguments()).fromFaceRecon
+                                        val skipPinWithFace =
+                                            comingFromFace && binding.user?.faceSkipsPin ?: false
+                                        if (binding.user?.pin == null || skipPinWithFace) {
+                                            goToCheckout(product)
+                                        } else {
+                                            showEnterUserPin(
+                                                binding.user!!,
+                                                requireContext(),
+                                                requireView()
+                                            ) {
+                                                goToCheckout(product)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
+
+            binding.homeProductRecyclerview.adapter = productAdapter
+
+            filterProducts(selectedCategory)
+
+            postponeEnterTransition()
+            view?.doOnPreDraw {
+                startPostponedEnterTransition()
+            }
+        }
+    }
+
+    private fun filterProducts(category: String?) {
+        selectedCategory = category
+
+        val isAllCategories =
+            category.isNullOrEmpty() || category == getString(R.string.all_categories)
+
+        val matchesCategory: (Product) -> Boolean = { product ->
+            if (category == getString(R.string.no_category)) product.roles.isEmpty()
+            else product.roles.contains(category)
+        }
+
+        if (::productAdapter.isInitialized) {
+            val filteredList =
+                if (isAllCategories) allProducts else allProducts.filter(matchesCategory)
+            productAdapter.updateData(filteredList)
+        }
+
+        if (::multiOrderAdapter.isInitialized) {
+            val filteredMultiList =
+                if (isAllCategories) productAmountList else productAmountList.filter {
+                    matchesCategory(it.product)
+                }
+            multiOrderAdapter.submitList(filteredMultiList)
+        }
+    }
+
+    private fun showCategoryPopupMenu(v: View) {
+        val popup = PopupMenu(requireContext(), v)
+
+        popup.menu.add(Menu.NONE, 0, 0, getString(R.string.all_categories))
+        popup.menu.add(Menu.NONE, 1, 1, getString(R.string.no_category))
+
+        val userRoles = binding.user?.roles ?: emptyList()
+        userRoles.forEachIndexed { index, role ->
+            popup.menu.add(Menu.NONE, index + 2, index + 2, role)
+        }
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            val chosenRole = if (menuItem.itemId == 0) null else menuItem.title.toString()
+            binding.categoryOptionsButtonHomeProduct.text =
+                chosenRole ?: getString(R.string.all_categories)
+
+            filterProducts(chosenRole)
+            true
+        }
+        popup.show()
+    }
+
     @SuppressLint("RestrictedApi")
     private fun showFabPopUpMenu(v: View, @MenuRes homeProductOtherOptionsMenu: Int) {
         val popup = PopupMenu(requireContext(), v)
@@ -162,8 +275,7 @@ class HomeProductFragment : Fragment() {
                     val iconMarginPx =
                         TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_DIP, 8.toFloat(), resources.displayMetrics
-                        )
-                            .toInt()
+                        ).toInt()
                     if (item.icon != null) {
                         item.icon = InsetDrawable(item.icon, iconMarginPx, 0, iconMarginPx, 0)
                     }
@@ -171,7 +283,6 @@ class HomeProductFragment : Fragment() {
             } catch (e: Exception) {
                 Log.e("HomeProductFragment", "menubuilder error: ${e.printStackTrace()}")
             }
-
         }
         popup.setOnMenuItemClickListener { menuItem: MenuItem ->
             when (menuItem.itemId) {
@@ -227,6 +338,14 @@ class HomeProductFragment : Fragment() {
         binding.singleBuyLayout.visibility = View.GONE
         binding.donoLayout.visibility = View.GONE
         binding.multiOrderLayout.visibility = View.VISIBLE
+    }
+
+    private fun switchToSingleBuy() {
+        val fadeThrough = MaterialFadeThrough()
+        TransitionManager.beginDelayedTransition((view) as ViewGroup, fadeThrough)
+        binding.multiOrderLayout.visibility = View.GONE
+        binding.donoLayout.visibility = View.GONE
+        binding.singleBuyLayout.visibility = View.VISIBLE
     }
 
     private fun setUpDonoBuy() {
@@ -514,9 +633,17 @@ class HomeProductFragment : Fragment() {
         plusMinusClicked(null)
         lifecycleScope.launch(Dispatchers.IO) {
             if (productAmountList.isEmpty()) {
-                val userRole = binding.user?.role ?: ""
-                val prodsForRole = productsRepository.getAllProductsByRole(userRole, usersRepository.isSuperRole(userRole))
-                val prodsGeneral = if (userRole.isNotEmpty()) productsRepository.getAllProductsByRole("", false) else emptyList()
+                val userRoles = binding.user?.roles ?: emptyList()
+                val prodsForRole = productsRepository.getAllProductsByRole(
+                    userRoles,
+                    usersRepository.isSuperRole(userRoles)
+                )
+                val prodsGeneral =
+                    if (userRoles.isNotEmpty()) productsRepository.getAllProductsByRole(
+                        emptyList(),
+                        false
+                    ) else emptyList()
+
                 val allProds = (prodsForRole + prodsGeneral).distinctBy { it.stringSortID }
                 allProds.forEach { prod ->
                     productAmountList.add(
@@ -532,8 +659,11 @@ class HomeProductFragment : Fragment() {
                     )
                 }
             }
-            multiOrderAdapter.submitList(productAmountList)
-            multiOrderOverViewAdapter.submitList(productAmountOverviewList)
+
+            lifecycleScope.launch(Dispatchers.Main) {
+                filterProducts(getString(R.string.all_categories))
+                multiOrderOverViewAdapter.submitList(productAmountOverviewList)
+            }
         }
     }
 
@@ -588,66 +718,6 @@ class HomeProductFragment : Fragment() {
         }
     }
 
-
-    private fun switchToSingleBuy() {
-        val fadeThrough = MaterialFadeThrough()
-        TransitionManager.beginDelayedTransition((view) as ViewGroup, fadeThrough)
-        binding.multiOrderLayout.visibility = View.GONE
-        binding.donoLayout.visibility = View.GONE
-        binding.singleBuyLayout.visibility = View.VISIBLE
-
-    }
-
-    private fun setUpSingleBuy() {
-        binding.homeProductRecyclerview.apply {
-            setHasFixedSize(true)
-
-            val metrics = resources.displayMetrics
-            adapter = productAdapter
-
-            val yInches = metrics.heightPixels / metrics.ydpi
-            val xInches = metrics.widthPixels / metrics.xdpi
-            val diagonalInches = sqrt((xInches * xInches + yInches * yInches).toDouble())
-            layoutManager = if (diagonalInches >= 7) {
-                // 6.5inch device or bigger
-
-                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
-                    GridLayoutManager(requireContext(), 3)
-                else
-                    GridLayoutManager(requireContext(), 2)
-            } else {
-                // smaller device
-                LinearLayoutManager(requireContext())
-            }
-        }
-
-        productAdapter.setOnItemClickListener(object : ProductHomeAdapter.ProductItemClickListener {
-            override fun onItemClick(product: Product, cardView: View) {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val donoActive = donateItemDataSource.getDonationItem(product.price)
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        if (donoActive != null) {
-                            goToCheckout(product)
-                        } else {
-                            val comingFromFace =
-                                HomeProductFragmentArgs.fromBundle(requireArguments()).fromFaceRecon
-                            val skipPinWithFace =
-                                comingFromFace && binding.user?.faceSkipsPin ?: false
-                            if (binding.user?.pin == null || skipPinWithFace) {
-                                goToCheckout(product)
-                            } else {
-                                showEnterUserPin(binding.user!!, requireContext(), requireView()) {
-                                    goToCheckout(product)
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
-        })
-    }
-
     private fun goToCheckout(product: Product) {
         val checkoutTransName = getString(R.string.checkout_card_trans_name)
 
@@ -660,67 +730,47 @@ class HomeProductFragment : Fragment() {
             )
 
         findNavController().navigate(action, extras)
-
     }
-
-    override fun onStart() {
-        super.onStart()
-        if (::productAdapter.isInitialized) {
-            productAdapter.startListening()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (::productAdapter.isInitialized) {
-        productAdapter.stopListening()}
-
-    }
-
-
 }
 
-class ProductHomeAdapter internal constructor(options: FirestoreRecyclerOptions<Product>) :
-    FirestoreRecyclerAdapter<Product, ProductHomeAdapter.ProductViewHolder>(options) {
+class ProductHomeAdapter(
+    private var products: List<Product>,
+    private val listener: ProductItemClickListener
+) : RecyclerView.Adapter<ProductHomeAdapter.ProductViewHolder>() {
+
+    fun updateData(newProducts: List<Product>) {
+        products = newProducts
+        notifyDataSetChanged()
+    }
+
     inner class ProductViewHolder(
-        private val binding: HomeProductRvLayoutBinding,
-        listener: ProductItemClickListener,
+        private val binding: HomeProductRvLayoutBinding
     ) : RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.run {
-                this.listener = listener
-            }
-        }
 
         fun bind(product: Product) {
             binding.product = product
+            binding.listener = listener
             binding.executePendingBindings()
             binding.homeProductItemIcon.setImageResource(getProductIcon(product.productIcon))
         }
     }
-
-    private lateinit var listener: ProductItemClickListener
 
     interface ProductItemClickListener {
         fun onItemClick(product: Product, cardView: View)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
-        return ProductViewHolder(
-            HomeProductRvLayoutBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            ), listener
+        val binding = HomeProductRvLayoutBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
         )
+        return ProductViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ProductViewHolder, position: Int, model: Product) {
-        holder.bind(getItem(position))
+    override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
+        holder.bind(products[position])
     }
 
-    fun setOnItemClickListener(onItemClickListener: ProductItemClickListener) {
-        this.listener = onItemClickListener
-    }
-
+    override fun getItemCount(): Int = products.size
 }

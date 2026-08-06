@@ -29,7 +29,7 @@ class ProductsRepository @Inject constructor() {
         productIcon: Int,
         currentStock: Int,
         refillSize: Int,
-        role: String,
+        roles: List<String>,
     ) {
         productDataSource.addProduct(
             Product(
@@ -38,7 +38,7 @@ class ProductsRepository @Inject constructor() {
                 productIcon,
                 currentStock,
                 refillSize,
-                role
+                roles
             )
         )
     }
@@ -47,26 +47,15 @@ class ProductsRepository @Inject constructor() {
         name: String,
         price: Double,
         productIcon: Int,
-        role: Role
+        roles: List<String>
     ) {
-        productDataSource.addProduct(Product(name, price, productIcon, role = role.name))
+        productDataSource.addProduct(Product(name, price, productIcon, roles = roles))
     }
 
     fun getProductQuery(): Query {
         return productDataSource.getProductQuery().orderBy("name")
     }
 
-    fun getProductQueryByRole(userRole: String?, isSuperUser: Boolean): Query {
-        val baseQuery = productDataSource.getProductQuery()
-
-        if (isSuperUser) {
-            return baseQuery
-        }
-
-        val targetRoles: List<Any?> = listOfNotNull(userRole) + listOf("", null)
-
-        return baseQuery.whereIn("role", targetRoles.distinct())
-    }
 
     suspend fun fixLegacyProductsWithoutRole() {
         productDataSource.fixLegacyProductsWithoutRole()
@@ -104,9 +93,9 @@ class ProductsRepository @Inject constructor() {
         productIcon: Int,
         currentStock: Int,
         refillSize: Int,
-        role: String?
+        roles: List<String>
     ) {
-        productDataSource.updateProduct(id, price, productIcon, currentStock, refillSize, role)
+        productDataSource.updateProduct(id, price, productIcon, currentStock, refillSize, roles)
     }
 
     suspend fun productBought(
@@ -133,12 +122,15 @@ class ProductsRepository @Inject constructor() {
 
     suspend fun getAllProducts(): List<Product> = productDataSource.getAllProducts()
 
-    suspend fun getAllProductsByRole(role: String, isSuperUser: Boolean): List<Product> {
+    suspend fun getAllProductsByRole(roles: List<String>, isSuperUser: Boolean): List<Product> {
         val allProducts = productDataSource.getAllProducts()
         if (isSuperUser) {
             return allProducts
         }
-        return allProducts.filter { it.role == role }
+        return allProducts.filter { product ->
+            val productRoles = product.roles
+            productRoles.isEmpty() || productRoles.any { it in roles }
+        }
     }
 
 }

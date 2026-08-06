@@ -18,6 +18,7 @@ import de.muenchen.appcenter.nimux.model.MultiOrderProductListWithProduct
 import de.muenchen.appcenter.nimux.model.NameColors
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.model.User
+import de.muenchen.appcenter.nimux.util.await
 import de.muenchen.appcenter.nimux.util.collection_userLogs
 import de.muenchen.appcenter.nimux.util.collection_users
 import de.muenchen.appcenter.nimux.util.round
@@ -42,6 +43,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.collections.remove
+import kotlin.text.contains
+import kotlin.text.get
 
 class UserDataSource @Inject constructor(
     private val tenantRefProvider: Provider<DocumentReference>
@@ -235,7 +239,7 @@ class UserDataSource @Inject constructor(
         useProductAI: Boolean,
         faceSkipsPin: Boolean,
         faceFeatureNeeded: Boolean,
-        role: String?
+        roles: List<String>
     ) {
         val user = userRef.document(userID)
         user.update("showCredit", showCredit)
@@ -244,7 +248,7 @@ class UserDataSource @Inject constructor(
         user.update("useProductAI", useProductAI)
         user.update("faceSkipsPin", faceSkipsPin)
         user.update("faceFeatureNeeded", faceFeatureNeeded)
-        user.update("role", role)
+        user.update("roles", roles)
         logUserAction(
             userID,
             String.format(userlog_description_update, showCredit, collectData, pin != null)
@@ -338,6 +342,17 @@ class UserDataSource @Inject constructor(
             "Mehrfachkauf: $productsString",
             totalPay
         )
+    }
+
+    suspend fun deleteRoleFromUser(roleName: String) {
+        val usersSnapshot = userRef.get().await()
+        for (document in usersSnapshot.documents) {
+            val user = document.toObject(User::class.java)
+            if (user?.roles != null && user.roles.contains(roleName)) {
+                val updatedRoles = user.roles.toMutableList().apply { remove(roleName) }
+                document.reference.update("roles", updatedRoles).await()
+            }
+        }
     }
 }
 

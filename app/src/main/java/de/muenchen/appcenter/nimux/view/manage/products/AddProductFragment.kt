@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentAddProductBinding
@@ -194,15 +195,19 @@ class AddProductFragment : Fragment() {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
-        
+
         roleManager = RoleManager(
             fragment = this,
-            roleAutoComplete = binding.roleAutocomplete,
             dataSource = userSuggestionDataSource
         ).also { it.initialize() }
 
-        binding.buttonConfigureRoles.setOnClickListener {
-            roleManager?.showRoleConfigurationDialog()
+        roleManager = RoleManager(this, userSuggestionDataSource).also { it.initialize() }
+
+        binding.roleInputEditText.setOnClickListener {
+            roleManager?.showMultiSelectRoleDialog(viewModel.selectedRoles.value ?: emptySet()) { updatedRoles ->
+                viewModel.updateSelectedRoles(updatedRoles)
+            }
+
         }
 
         setups()
@@ -264,13 +269,6 @@ class AddProductFragment : Fragment() {
                 binding.addProductInputName.error = getString(R.string.field_cant_be_empty)
             } else {
                 binding.addProductInputName.error = null
-            }
-        }
-        viewModel.productRoleEmpty.observe(viewLifecycleOwner) { isEmpty ->
-            if (isEmpty) {
-                binding.roleInputLayout.error = getString(R.string.field_cant_be_empty)
-            } else {
-                binding.roleInputLayout.error = null
             }
         }
         viewModel.productPriceEmpty.observe(viewLifecycleOwner) {

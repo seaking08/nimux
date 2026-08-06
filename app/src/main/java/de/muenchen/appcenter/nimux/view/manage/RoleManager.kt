@@ -1,66 +1,43 @@
 package de.muenchen.appcenter.nimux.view.manage
 
 import android.view.View
-import de.muenchen.appcenter.nimux.R
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Filter
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.datasources.UserSuggestionDataSource
 import de.muenchen.appcenter.nimux.model.Role
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlinx.coroutines.withContext
 
 class RoleManager(
     private val fragment: Fragment,
-    private val roleAutoComplete: AutoCompleteTextView,
     private val dataSource: UserSuggestionDataSource
 ) {
     private val rolesList = mutableListOf<Role>()
     private val roleNamesList = mutableListOf<String>()
 
-    private val roleAdapter: ArrayAdapter<String> by lazy {
-        object : ArrayAdapter<String>(
-            fragment.requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
-            roleNamesList
-        ) {
-            override fun getFilter(): Filter {
-                return object : Filter() {
-                    override fun performFiltering(constraint: CharSequence?): FilterResults {
-                        val results = FilterResults()
-                        results.values = roleNamesList
-                        results.count = roleNamesList.size
-                        return results
-                    }
 
-                    override fun publishResults(
-                        constraint: CharSequence?,
-                        results: FilterResults?
-                    ) {
-                        if (results != null && results.count > 0) {
-                            notifyDataSetChanged()
-                        } else {
-                            notifyDataSetInvalidated()
-                        }
-                    }
-                }
-            }
-        }
-    }
+    private val _availableRolesFlow = MutableStateFlow<List<String>>(emptyList())
+    val availableRolesFlow: StateFlow<List<String>> = _availableRolesFlow.asStateFlow()
 
     private var activeRolesContainer: LinearLayout? = null
 
+    private var activeToast: Toast? = null
+
     fun initialize() {
-        roleAutoComplete.setAdapter(roleAdapter)
         observeRoles()
     }
 
@@ -73,12 +50,7 @@ class RoleManager(
                 roleNamesList.clear()
                 roleNamesList.addAll(roles.map { it.name })
 
-                roleAdapter.notifyDataSetChanged()
-
-                val currentSelection = roleAutoComplete.text.toString()
-                if (currentSelection.isNotEmpty() && !roleNamesList.contains(currentSelection)) {
-                    roleAutoComplete.setText("", false)
-                }
+                _availableRolesFlow.value = roleNamesList.toList()
 
                 activeRolesContainer?.let { updateRolesListUI(it) }
             }
@@ -114,7 +86,7 @@ class RoleManager(
     private fun addRole(dialogView: View) {
         val newRoleEditText = dialogView.findViewById<TextInputEditText>(R.id.new_role_edit_text)
         val isSuperRoleCheckBox =
-            dialogView.findViewById<com.google.android.material.checkbox.MaterialCheckBox>(R.id.checkbox_is_super_role)
+            dialogView.findViewById<MaterialCheckBox>(R.id.checkbox_is_super_role)
         val newRoleName = newRoleEditText.text.toString().trim()
         val isSuperRole = isSuperRoleCheckBox.isChecked
 
@@ -145,7 +117,7 @@ class RoleManager(
                 fragment.layoutInflater.inflate(R.layout.item_role, rolesContainer, false)
             val roleNameText = itemView.findViewById<TextView>(R.id.text_role_name)
             val superRoleCheckBox =
-                itemView.findViewById<com.google.android.material.checkbox.MaterialCheckBox>(R.id.checkbox_item_super_role)
+                itemView.findViewById<MaterialCheckBox>(R.id.checkbox_item_super_role)
             val deleteButton = itemView.findViewById<MaterialButton>(R.id.button_delete_role)
 
             roleNameText.text = role.name
@@ -165,15 +137,88 @@ class RoleManager(
             }
 
             deleteButton.setOnClickListener {
-                fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        dataSource.deleteRole(role)
-                    } catch (e: Exception) {
-                        Timber.e(e, "Fehler beim Löschen der Rolle")
-                    }
-                }
+                deleteRole(role)
             }
             rolesContainer.addView(itemView)
+        }
+    }
+
+    private fun deleteRole(role: Role) {
+        val context = fragment.context ?: return
+
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setTitle(fragment.getString(R.string.action_role))
+            .setMessage(fragment.getString(R.string.delete_role))
+            .setPositiveButton(fragment.getString(R.string.yes), null)
+            .setNegativeButton(fragment.getString(R.string.cancel), null)
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    dataSource.deleteRole(role)
+
+                    withContext(Dispatchers.Main) {
+                        dialog.dismiss()
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "Fehler beim Löschen der Rolle")
+                }
+            }
+        }
+    }
+
+    private fun showLimitedToast(context: android.content.Context, message: String) {
+        activeToast?.cancel()
+        activeToast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
+        activeToast?.show()
+    }
+
+    fun showMultiSelectRoleDialog(
+        currentSelectedRoles: Set<String>,
+        onRolesSelected: (Set<String>) -> Unit
+    ) {
+        val availableRolesList = availableRolesFlow.value
+
+        if (availableRolesList.isEmpty()) {
+            return
+        }
+
+        val availableRolesArray = availableRolesList.toTypedArray()
+        val checkedItems = availableRolesArray.map { role ->
+            currentSelectedRoles.contains(role)
+        }.toBooleanArray()
+
+        val tempSelectedRoles = currentSelectedRoles.toMutableSet()
+
+        val dialog = MaterialAlertDialogBuilder(fragment.requireContext())
+            .setTitle(fragment.getString(R.string.action_role))
+            .setMultiChoiceItems(availableRolesArray, checkedItems) { _, which, isChecked ->
+                val clickedRole = availableRolesArray[which]
+                if (isChecked) {
+                    tempSelectedRoles.add(clickedRole)
+                } else {
+                    tempSelectedRoles.remove(clickedRole)
+                }
+            }
+            .setPositiveButton(fragment.getString(R.string.save), null)
+            .setNegativeButton(fragment.getString(R.string.cancel), null)
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            if (tempSelectedRoles.size > 3) {
+                showLimitedToast(
+                    fragment.requireContext(),
+                    fragment.getString(R.string.max_roles)
+                )
+            } else {
+                onRolesSelected(tempSelectedRoles)
+                dialog.dismiss()
+            }
         }
     }
 }

@@ -44,7 +44,7 @@ class SuggestedUserManageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.textViewName.text = user.name
-        binding.textViewRole.text = user.role
+        binding.textViewRole.text = user.roles.joinToString(", ")
         binding.switchCredit.isChecked = user.showCredit
         binding.switchData.isChecked = user.collectData
         binding.switchPin.isChecked = user.pin != null
