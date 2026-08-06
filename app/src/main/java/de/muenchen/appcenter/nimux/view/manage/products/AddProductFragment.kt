@@ -2,6 +2,7 @@ package de.muenchen.appcenter.nimux.view.manage.products
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
@@ -16,6 +17,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
+import com.mikepenz.iconics.IconicsDrawable
+import com.mikepenz.iconics.utils.colorInt
+import com.mikepenz.iconics.utils.sizeDp
+import android.graphics.drawable.Drawable
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
@@ -62,17 +67,10 @@ class AddProductFragment : Fragment() {
         return binding.root
     }
 
-    private fun setButtonHelper(btnView: MaterialButton, title: Int, iconLeft: Int?) {
-        btnView.text = getString(title)
+    private fun setButtonHelper(btnView: MaterialButton, title: String, iconLeft: Drawable?) {
+        btnView.text = title
         btnView.setCompoundDrawablesWithIntrinsicBounds(
-            if (iconLeft != null) {
-                AppCompatResources.getDrawable(
-                    requireContext(),
-                    iconLeft
-                )
-            } else {
-                null
-            },
+            iconLeft,
             null,
             AppCompatResources.getDrawable(
                 requireContext(),
@@ -83,7 +81,26 @@ class AddProductFragment : Fragment() {
     }
 
     private fun showPopUp(view: View) {
-        val popupMenu = PopupMenu(requireContext(), view)
+        hideKeyboard(requireActivity())
+
+        val btnView = view.findViewById<MaterialButton>(R.id.add_product_choose_icon)
+
+        val dialog = IconPickerAlertDialog { selectedIconId ->
+            val iconName = iconMap[selectedIconId] ?: "cmd_star"
+
+            val newIconDrawable = IconicsDrawable(requireContext(), iconName).apply {
+                colorInt = Color.BLACK
+                sizeDp = 24
+            }
+
+            setButtonHelper(btnView, iconName, newIconDrawable)
+
+            viewModel.productIconId.value = selectedIconId
+        }
+
+        dialog.show(childFragmentManager, "IconPickerAlert")
+
+        /*val popupMenu = PopupMenu(requireContext(), view)
         popupMenu.menuInflater.inflate(R.menu.product_icon_selection_menu, popupMenu.menu)
         popupMenu.setOnMenuItemClickListener { menuItem ->
             val btnView = view.findViewById<MaterialButton>(R.id.add_product_choose_icon)
@@ -187,7 +204,7 @@ class AddProductFragment : Fragment() {
             popupMenu.setForceShowIcon(true)
         }
         popupMenu.show()
-        hideKeyboard(requireActivity())
+        hideKeyboard(requireActivity())*/
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -195,7 +212,7 @@ class AddProductFragment : Fragment() {
 
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
-
+        
         roleManager = RoleManager(
             fragment = this,
             dataSource = userSuggestionDataSource

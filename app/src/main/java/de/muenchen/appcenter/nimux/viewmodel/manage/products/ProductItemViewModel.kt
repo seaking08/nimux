@@ -11,8 +11,6 @@ import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
-import de.muenchen.appcenter.nimux.util.getProductIcon
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -52,8 +50,6 @@ class ProductItemViewModel @Inject constructor(
     private val _customAmountChecked = MutableLiveData(false)
     val customAmountChecked: LiveData<Boolean>
         get() = _customAmountChecked
-
-    val productItemResource = getProductIcon(product.productIcon)
 
     val checkedButton = ObservableInt()
 

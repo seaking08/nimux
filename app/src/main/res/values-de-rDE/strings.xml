@@ -371,6 +371,7 @@
     <string name="super_role">Superrolle</string>
     <string name="new_role">Neue Rolle</string>
     <string name="add_new_role">Rolle hinzufügen</string>
+    <string name="back">Zurück</string>
     <string name="all_categories">Alle Kategorien</string>
     <string name="no_category">Kategorielos</string>
     <string name="max_roles">Es dürfen maximal 3 Rollen ausgewählt werden</string>

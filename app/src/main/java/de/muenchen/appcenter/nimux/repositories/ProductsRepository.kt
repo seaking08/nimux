@@ -57,8 +57,10 @@ class ProductsRepository @Inject constructor() {
     }
 
 
+    //TMP JUST FOR ME
     suspend fun fixLegacyProductsWithoutRole() {
         productDataSource.fixLegacyProductsWithoutRole()
+        productDataSource.fixLegacyProductIcons()
     }
 
     fun getUserStatQuery(userId: String): Query {
@@ -132,5 +134,4 @@ class ProductsRepository @Inject constructor() {
             productRoles.isEmpty() || productRoles.any { it in roles }
         }
     }
-
 }

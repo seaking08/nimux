@@ -8,6 +8,7 @@ import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Matrix
 import android.os.Build
 import android.os.CountDownTimer
@@ -38,11 +39,15 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
+import com.mikepenz.iconics.IconicsDrawable
+import com.mikepenz.iconics.utils.colorInt
+import com.mikepenz.iconics.utils.sizeDp
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.MultiOrderOverviewRvLayoutBinding
 import de.muenchen.appcenter.nimux.databinding.MultiOrderProductRvLayoutBinding
 import de.muenchen.appcenter.nimux.model.MultiOrderProductListWithProduct
 import de.muenchen.appcenter.nimux.model.User
+import de.muenchen.appcenter.nimux.view.manage.products.iconMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
@@ -590,7 +595,21 @@ class MultiOrderProductAdapter(
             binding.product = item.product
             binding.multiOrder = item.multiOrderProductList
             binding.executePendingBindings()
-            binding.productIcon.setImageResource(getProductIcon(item.product.productIcon))
+
+            val context = binding.root.context
+            val iconId = item.product.productIcon
+            val iconName = iconMap[iconId] ?: ""
+
+            if (iconName.isNotEmpty()) {
+                val drawable = IconicsDrawable(context, iconName).apply {
+                    colorInt = Color.DKGRAY
+                    sizeDp = 24
+                }
+                binding.productIcon.setImageDrawable(drawable)
+            } else {
+                binding.productIcon.setImageDrawable(null)
+            }
+
             binding.plusIconButton.setOnClickListener(this)
             binding.minusIconButton.setOnClickListener(this)
         }
@@ -731,6 +750,7 @@ fun stringToStringSortID(string: String): String {
     return string.replace("[^A-Za-z0-9 ]".toRegex(), "").lowercase(Locale.getDefault()).trim()
 }
 
+/*
 fun getProductIcon(productIcon: Int): Int {
     return when (productIcon) {
         product_icon_cup -> R.drawable.ic_round_free_breakfast_24
@@ -746,4 +766,4 @@ fun getProductIcon(productIcon: Int): Int {
         product_icon_can -> R.drawable.ic_coke_can
         else -> 0
     }
-}
+} */

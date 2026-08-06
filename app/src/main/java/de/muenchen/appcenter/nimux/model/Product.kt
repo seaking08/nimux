@@ -9,7 +9,7 @@ import kotlinx.parcelize.Parcelize
 data class Product(
     val name: String = "",
     val price: Double = 0.0,
-    val productIcon: Int = product_icon_none,
+    val productIcon: Int = 0,
     val currentStock: Int = 0,
     val refillSize: Int = 0,
     val roles: List<String> = emptyList(),

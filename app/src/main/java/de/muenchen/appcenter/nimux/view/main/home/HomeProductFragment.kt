@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.drawable.InsetDrawable
 import android.os.Bundle
 import android.util.Log
@@ -35,6 +36,10 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.android.material.transition.MaterialContainerTransform
 import com.google.android.material.transition.MaterialFadeThrough
+import com.google.firebase.firestore.Query
+import com.mikepenz.iconics.IconicsDrawable
+import com.mikepenz.iconics.utils.colorInt
+import com.mikepenz.iconics.utils.sizeDp
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.HomeProductFragmentBinding
@@ -49,11 +54,11 @@ import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.MultiOrderOverviewAdapter
 import de.muenchen.appcenter.nimux.util.MultiOrderProductAdapter
 import de.muenchen.appcenter.nimux.util.RangeValidator
-import de.muenchen.appcenter.nimux.util.getProductIcon
 import de.muenchen.appcenter.nimux.util.hideKeyboard
 import de.muenchen.appcenter.nimux.util.round
 import de.muenchen.appcenter.nimux.util.showEnterUserPin
 import de.muenchen.appcenter.nimux.util.showKeyboard
+import de.muenchen.appcenter.nimux.view.manage.products.iconMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -283,6 +288,7 @@ class HomeProductFragment : Fragment() {
             } catch (e: Exception) {
                 Log.e("HomeProductFragment", "menubuilder error: ${e.printStackTrace()}")
             }
+
         }
         popup.setOnMenuItemClickListener { menuItem: MenuItem ->
             when (menuItem.itemId) {
@@ -730,6 +736,7 @@ class HomeProductFragment : Fragment() {
             )
 
         findNavController().navigate(action, extras)
+
     }
 }
 

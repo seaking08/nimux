@@ -2,6 +2,7 @@ package de.muenchen.appcenter.nimux.view.manage.products
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import androidx.databinding.DataBindingUtil
@@ -10,6 +11,9 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
+import com.mikepenz.iconics.IconicsDrawable
+import com.mikepenz.iconics.utils.colorInt
+import com.mikepenz.iconics.utils.sizeDp
 import dagger.hilt.android.AndroidEntryPoint
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentProductItemBinding
@@ -82,7 +86,19 @@ class ProductItemFragment : Fragment() {
             findNavController().popBackStack()
             hideKeyboard(requireActivity())
         }
-        binding.productItemIcon.setImageResource(viewModel.productItemResource)
+
+        val iconId = viewModel.product.productIcon
+        val iconName = iconMap[iconId] ?: ""
+
+        if (iconName.isNotEmpty()) {
+            val drawable = IconicsDrawable(requireContext(), iconName).apply {
+                colorInt = Color.DKGRAY
+                sizeDp = 64
+            }
+            binding.productItemIcon.setImageDrawable(drawable)
+        } else {
+            binding.productItemIcon.setImageDrawable(null)
+        }
 
         viewModel.wrongInput.observe(viewLifecycleOwner) {
             if (it)
