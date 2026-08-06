@@ -17,12 +17,14 @@ import de.muenchen.appcenter.nimux.R
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
 import de.muenchen.appcenter.nimux.repositories.ProductIconRepository
+import kotlin.coroutines.coroutineContext
 
 /*
 import de.muenchen.appcenter.nimux.util.product_icon_bottle
@@ -59,7 +61,6 @@ enum class ProductIcon(
 
 val productIconRepository = ProductIconRepository()
 val iconMap = productIconRepository.iconMap
-val foldersList = productIconRepository.foldersList
 
 fun drawIcon(context: Context,iconName: String, size: Int): Drawable{
     return if (iconName.startsWith("faw_")) {
@@ -169,6 +170,7 @@ class IconPickerAlertDialog(
         }
 
         fun showFolderView() {
+            val foldersList = productIconRepository.get_foldersList(requireContext())
             layoutHeader.visibility = View.GONE
             recyclerView.layoutManager = GridLayoutManager(requireContext(), 4)
             recyclerView.adapter = FolderAdapter(requireContext(), foldersList) { selectedFolder ->
@@ -183,9 +185,9 @@ class IconPickerAlertDialog(
         showFolderView()
 
         return MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Wähle einen Ordner")
+            .setTitle(getString(R.string.select_icon))
             .setView(view)
-            .setNegativeButton("Abbrechen") { dialog, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }
             .create()

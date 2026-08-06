@@ -379,4 +379,24 @@
     <string name="no_role">Keine Rolle ausgewählt</string>
     <string name="config_role">Rolle verwalten</string>
     <string name="roles">Rollen</string>
+    <string name="folder_general">Allgemein</string>
+    <string name="folder_food">Essen &amp; Lebensmittel</string>
+    <string name="folder_drinks">Getränke &amp; Bar</string>
+    <string name="folder_shopping">Einkaufen</string>
+    <string name="folder_household">Haushalt</string>
+    <string name="folder_tech">Technik</string>
+    <string name="folder_health">Gesundheit</string>
+    <string name="folder_sport">Sport</string>
+    <string name="folder_clothing">Kleidung</string>
+    <string name="folder_pets">Haustiere</string>
+    <string name="folder_garden">Garten &amp; Pflanzen</string>
+    <string name="folder_media">Medien</string>
+    <string name="folder_vehicles">Fahrzeuge &amp; Reise</string>
+    <string name="folder_tools">Werkzeug &amp; Heimwerken</string>
+    <string name="folder_party">Party &amp; Events</string>
+    <string name="folder_baby">Baby &amp; Kind</string>
+    <string name="folder_office">Büro &amp; Finanzen</string>
+    <string name="folder_social">Social Media &amp; Web</string>
+    <string name="folder_symbols">Symbole &amp; Extras</string>
+    <string name="select_icon">Wähle ein Icon</string>
 </resources>
