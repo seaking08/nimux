@@ -110,7 +110,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Rolle verwalten"
+                            android:text="@string/config_role"
                             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                             android:textColor="?colorPrimary" />
 
@@ -120,7 +120,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/default_margin"
-                            android:hint="Rollen">
+                            android:hint="@string/roles">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/role_input_edit_text"

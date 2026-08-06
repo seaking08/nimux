@@ -416,4 +416,6 @@
     <string name="max_roles">Only three roles are allowed</string>
     <string name="delete_role">Are you sure about deleting this role? The role will be removed from user und products afterwards.</string>
     <string name="no_role">No role selected</string>
+    <string name="config_role">Configure Role</string>
+    <string name="roles">Roles</string>
 </resources>

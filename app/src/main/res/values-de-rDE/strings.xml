@@ -376,4 +376,6 @@
     <string name="max_roles">Es dürfen maximal 3 Rollen ausgewählt werden</string>
     <string name="delete_role">Sind Sie sich sicher diese Rolle zu löschen? Die Rolle wird im Nachhinein auch von Nutzer und Produkt gelöscht.</string>
     <string name="no_role">Keine Rolle ausgewählt</string>
+    <string name="config_role">Rolle verwalten</string>
+    <string name="roles">Rollen</string>
 </resources>
