@@ -183,7 +183,7 @@ class ProductDataSource @Inject constructor(
     suspend fun fixLegacyProductIcons() {
         try {
             val snapshot = requireCollectionProductRef().get(Source.SERVER).await()
-
+/*
             for (document in snapshot.documents) {
                 val rawData = document.data
 
@@ -191,7 +191,7 @@ class ProductDataSource @Inject constructor(
 
                     document.reference.update("productIcon", "").await()
                 }
-            }
+            } */
         } catch (e: Exception) {
             Timber.e("Fehler bei der Icon-Migration: $e")
         }

@@ -72,20 +72,17 @@ class AddProductViewModel @Inject constructor(
         val priceStr = productPrice.value.orEmpty()
         val stockStr = productStock.value.orEmpty()
         val refillStr = productRefillSize.value.orEmpty()
-        val roleText = roleNameText.value.orEmpty().trim()
         val isRefillable = refillable.value ?: false
 
         val nameIsEmpty = name.isEmpty()
         val priceIsEmpty = priceStr.isEmpty()
         val stockIsEmpty = isRefillable && stockStr.isEmpty()
         val refillIsEmpty = isRefillable && refillStr.isEmpty()
-        val roleIsEmpty = roleText.isEmpty()
 
         productNameEmpty.value = nameIsEmpty
         productPriceEmpty.value = priceIsEmpty
         productStockEmpty.value = stockIsEmpty
         productRefillSizeEmpty.value = refillIsEmpty
-        productRoleEmpty.value = roleIsEmpty
 
         if (nameIsEmpty || priceIsEmpty || stockIsEmpty || refillIsEmpty) {
             return
@@ -116,7 +113,7 @@ class AddProductViewModel @Inject constructor(
                     productNameExists.value = true
                 } else {
                     val price = parsedPrice
-                    val iconId = productIconId.value ?: 0
+                    val iconId = productIcon.value ?: 0
 
                     if (isRefillable) {
                         productsRepository.addRefillableProduct(
@@ -131,7 +128,7 @@ class AddProductViewModel @Inject constructor(
                         productsRepository.addNonRefillableProduct(
                             name,
                             price,
-                            icon,
+                            iconId,
                             finalRoles
                         )
                     }

@@ -36,7 +36,6 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.android.material.transition.MaterialContainerTransform
 import com.google.android.material.transition.MaterialFadeThrough
-import com.google.firebase.firestore.Query
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
@@ -142,10 +141,6 @@ class HomeProductFragment : Fragment() {
             setHasFixedSize(true)
 
             val metrics = resources.displayMetrics
-            if (::productAdapter.isInitialized) {
-                adapter = productAdapter
-            }
-
             val yInches = metrics.heightPixels / metrics.ydpi
             val xInches = metrics.widthPixels / metrics.xdpi
             val diagonalInches = sqrt((xInches * xInches + yInches * yInches).toDouble())
@@ -667,7 +662,21 @@ class HomeProductFragment : Fragment() {
             }
 
             lifecycleScope.launch(Dispatchers.Main) {
-                filterProducts(getString(R.string.all_categories))
+                // Ensure initial filtering is applied when MultiBuy sets up
+                val currentCat = selectedCategory ?: getString(R.string.all_categories)
+                val isAllCategories = currentCat == getString(R.string.all_categories)
+
+                val matchesCategory: (Product) -> Boolean = { product ->
+                    if (currentCat == getString(R.string.no_category)) product.roles.isEmpty()
+                    else product.roles.contains(currentCat)
+                }
+
+                val filteredMultiList =
+                    if (isAllCategories) productAmountList else productAmountList.filter {
+                        matchesCategory(it.product)
+                    }
+
+                multiOrderAdapter.submitList(filteredMultiList)
                 multiOrderOverViewAdapter.submitList(productAmountOverviewList)
             }
         }
@@ -740,11 +749,13 @@ class HomeProductFragment : Fragment() {
     }
 }
 
+// --- REPLACED: FirestoreRecyclerAdapter removed in favor of standard RecyclerView.Adapter ---
 class ProductHomeAdapter(
     private var products: List<Product>,
     private val listener: ProductItemClickListener
 ) : RecyclerView.Adapter<ProductHomeAdapter.ProductViewHolder>() {
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateData(newProducts: List<Product>) {
         products = newProducts
         notifyDataSetChanged()
@@ -758,7 +769,20 @@ class ProductHomeAdapter(
             binding.product = product
             binding.listener = listener
             binding.executePendingBindings()
-            binding.homeProductItemIcon.setImageResource(getProductIcon(product.productIcon))
+
+            val context = binding.root.context
+            val iconId = product.productIcon
+            val iconName = iconMap[iconId] ?: ""
+
+            if (iconName.isNotEmpty()) {
+                val drawable = IconicsDrawable(context, iconName).apply {
+                    colorInt = Color.DKGRAY
+                    sizeDp = 24
+                }
+                binding.homeProductItemIcon.setImageDrawable(drawable)
+            } else {
+                binding.homeProductItemIcon.setImageDrawable(null)
+            }
         }
     }
 

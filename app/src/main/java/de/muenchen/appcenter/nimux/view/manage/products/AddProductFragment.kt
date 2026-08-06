@@ -95,7 +95,7 @@ class AddProductFragment : Fragment() {
 
             setButtonHelper(btnView, iconName, newIconDrawable)
 
-            viewModel.productIconId.value = selectedIconId
+            viewModel.productIcon.value = selectedIconId
         }
 
         dialog.show(childFragmentManager, "IconPickerAlert")
