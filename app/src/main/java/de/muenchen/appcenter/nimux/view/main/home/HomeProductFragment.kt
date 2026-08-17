@@ -662,7 +662,6 @@ class HomeProductFragment : Fragment() {
             }
 
             lifecycleScope.launch(Dispatchers.Main) {
-                // Ensure initial filtering is applied when MultiBuy sets up
                 val currentCat = selectedCategory ?: getString(R.string.all_categories)
                 val isAllCategories = currentCat == getString(R.string.all_categories)
 
@@ -749,7 +748,6 @@ class HomeProductFragment : Fragment() {
     }
 }
 
-// --- REPLACED: FirestoreRecyclerAdapter removed in favor of standard RecyclerView.Adapter ---
 class ProductHomeAdapter(
     private var products: List<Product>,
     private val listener: ProductItemClickListener
