@@ -399,4 +399,12 @@
     <string name="folder_social">Social Media &amp; Web</string>
     <string name="folder_symbols">Symbole &amp; Extras</string>
     <string name="select_icon">Wähle ein Icon</string>
+    <string name="use_money_feature_title_activate">Geld-Funktion aktivieren?</string>
+    <string name="use_money_feature_text_activate">Möchtest du das Bezahlen mit Guthaben wirklich einschalten?</string>
+    <string name="use_money_feature_title_deactivate">Geld-Funktion deaktivieren?</string>
+    <string name="use_money_feature_text_deactivate">"Möchtest du das Bezahlen mit Guthaben wirklich ausschalten? Die Guthaben werden ausgeblendet, bleiben aber im Hintergrund gespeichert.</string>
+    <string name="use_money">Geld verwenden</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
+    <string name="theme_system">System</string>
 </resources>

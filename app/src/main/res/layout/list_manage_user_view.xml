@@ -4,9 +4,13 @@
 
     <data>
         <import type="android.text.TextUtils" />
+        <import type="android.view.View" />
         <variable
             name="user"
             type="de.muenchen.appcenter.nimux.model.User" />
+        <variable
+            name="viewModel"
+            type="de.muenchen.appcenter.nimux.viewmodel.manage.users.ManageUserItemViewModel" />
     </data>
 
     <FrameLayout
@@ -51,6 +55,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     android:text="0,00€"
                     android:textAppearance="?attr/textAppearanceBody1" />
 

@@ -90,6 +90,7 @@ class UsersRepository @Inject constructor() {
         amount: Int = 1,
         faceDetected: Boolean,
         productDetected: Boolean,
+        useMoney: Boolean
     ) {
         val dono = donateItemDataSource.getDonationItem(product.price * amount)
         if (dono != null) {
@@ -102,15 +103,16 @@ class UsersRepository @Inject constructor() {
                 productDetected
             )
         } else {
-            userDataSource.payProduct(userID, product, amount, faceDetected, productDetected)
+            userDataSource.payProduct(userID, product, amount, faceDetected, productDetected, useMoney)
         }
     }
 
     suspend fun buyMultipleProducts(
         userID: String,
         multiOrderProductListWithProduct: List<MultiOrderProductListWithProduct>,
+        useMoney: Boolean
     ) {
-        userDataSource.payMultiProduct(userID, multiOrderProductListWithProduct)
+        userDataSource.payMultiProduct(userID, multiOrderProductListWithProduct, useMoney)
     }
 
     suspend fun isSuperRole(roles: List<String>): Boolean {

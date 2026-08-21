@@ -8,6 +8,9 @@
         <variable
             name="user"
             type="de.muenchen.appcenter.nimux.model.User" />
+        <variable
+            name="useMoney"
+            type="Boolean" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -83,7 +86,7 @@
                 android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                 android:textColor="?colorOnBackground"
                 android:transitionGroup="false"
-                android:visibility="@{user.showCredit ? View.VISIBLE : View.GONE}"
+                android:visibility="@{useMoney &amp;&amp; user.showCredit ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBaseline_toBaselineOf="@id/home_product_user_credit_title"
                 app:layout_constraintStart_toEndOf="@id/home_product_user_credit_title" />
 
@@ -96,7 +99,7 @@
                 android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                 android:textColor="?colorOnBackground"
                 android:transitionGroup="false"
-                android:visibility="@{user.showCredit ? View.VISIBLE : View.GONE}"
+                android:visibility="@{useMoney &amp;&amp; user.showCredit ? View.VISIBLE : View.GONE}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/home_product_user_name" />
 
@@ -187,6 +190,7 @@
                                 android:id="@+id/total_amount_title"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:visibility="@{useMoney ? View.VISIBLE : View.GONE}"
                                 android:text="@string/total"
                                 android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -197,6 +201,7 @@
                                 android:id="@+id/total_amount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:visibility="@{useMoney ? View.VISIBLE : View.GONE}"
                                 android:text="@string/zero_euro"
                                 android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
                                 app:layout_constraintBottom_toBottomOf="parent"

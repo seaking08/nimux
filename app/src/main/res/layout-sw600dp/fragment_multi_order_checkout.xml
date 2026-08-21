@@ -10,6 +10,9 @@
         <variable
             name="user"
             type="de.muenchen.appcenter.nimux.model.User" />
+        <variable
+            name="useMoney"
+            type="Boolean" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -86,7 +89,7 @@
                     android:layout_marginBottom="@dimen/default_margin"
                     android:text="@string/old_credit_title"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                    android:visibility="@{user.showCredit || user.pin!=null ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{useMoney &amp;&amp; (user.showCredit || user.pin!=null) ? View.VISIBLE : View.GONE}"
                     app:layout_constraintEnd_toStartOf="@id/old_credit"
                     app:layout_constraintTop_toBottomOf="@id/user_name_title" />
 
@@ -98,7 +101,7 @@
                     android:text="@{@string/money(user.toPay)}"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                     android:textColor="?colorOnBackground"
-                    android:visibility="@{user.showCredit || user.pin!=null ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{useMoney &amp;&amp;(user.showCredit || user.pin!=null) ? View.VISIBLE : View.GONE}"
                     app:layout_constraintBaseline_toBaselineOf="@id/old_credit_title"
                     app:layout_constraintEnd_toEndOf="parent" />
 
@@ -121,6 +124,7 @@
                     android:layout_marginStart="24dp"
                     android:layout_marginEnd="12dp"
                     android:layout_marginBottom="16dp"
+                    android:visibility="@{useMoney ? View.VISIBLE : View.GONE}"
                     android:text="@string/total"
                     android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
                     app:layout_constraintBottom_toTopOf="@id/new_credit_title"
@@ -132,6 +136,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="24dp"
                     android:layout_marginBottom="16dp"
+                    android:visibility="@{useMoney ? View.VISIBLE : View.GONE}"
                     android:text="@string/zero_euro"
                     android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
                     app:layout_constraintBaseline_toBaselineOf="@id/total_amount_title"
@@ -146,7 +151,7 @@
                     android:text="@string/new_credit_title"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                     android:textStyle="bold"
-                    android:visibility="@{user.showCredit || user.pin!=null ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{useMoney &amp;&amp;(user.showCredit || user.pin!=null) ? View.VISIBLE : View.GONE}"
                     app:layout_constraintBottom_toTopOf="@id/home_checkout_low_credit_warn_soft"
                     app:layout_constraintEnd_toStartOf="@id/new_credit" />
 
@@ -159,7 +164,7 @@
                     android:text="@string/new_credit_title"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                     android:textStyle="bold"
-                    android:visibility="@{user.showCredit || user.pin!=null ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{useMoney &amp;&amp;(user.showCredit || user.pin!=null) ? View.VISIBLE : View.GONE}"
                     app:layout_constraintBaseline_toBaselineOf="@id/new_credit_title"
                     app:layout_constraintEnd_toEndOf="parent" />
 

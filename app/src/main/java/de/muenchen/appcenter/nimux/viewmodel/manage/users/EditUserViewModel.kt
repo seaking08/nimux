@@ -1,5 +1,6 @@
 package de.muenchen.appcenter.nimux.viewmodel.manage.users
 
+import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -10,13 +11,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.md5
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class EditUserViewModel @Inject constructor(
     private val usersRepository: UsersRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     var user: User = savedStateHandle.get<User>("currentUser")
@@ -28,6 +31,11 @@ class EditUserViewModel @Inject constructor(
     val selectedRolesText: LiveData<String> = _selectedRoles.map { roles ->
         if (roles.isEmpty()) "" else roles.joinToString(", ")
     }
+
+    private val _useMoney = MutableLiveData(
+        sharedPreferences.getBoolean(useMoneyPrefKey, true)
+    )
+    val useMoney: LiveData<Boolean> get() = _useMoney
 
     fun updateSelectedRoles(newRoles: Set<String>) {
         _selectedRoles.value = newRoles

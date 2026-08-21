@@ -1,6 +1,7 @@
 package de.muenchen.appcenter.nimux.viewmodel.manage.users
 
 
+import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -10,17 +11,24 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ManageUserItemViewModel @Inject constructor(
     private val usersRepository: UsersRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     val user: User = savedStateHandle.get<User>("currentUser")
         ?: error("User missing in SavedStateHandle")
+
+    private val _useMoney = MutableLiveData(
+    sharedPreferences.getBoolean(useMoneyPrefKey, false)
+    )
+    val useMoney: LiveData<Boolean> get() = _useMoney
 
     private var buttonAtClick = 0
     private var customValue = 0.0

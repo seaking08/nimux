@@ -1,5 +1,6 @@
 package de.muenchen.appcenter.nimux.viewmodel.manage.products
 
+import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -10,13 +11,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.util.round
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class EditProductViewModel @Inject constructor(
     private val productsRepository: ProductsRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     var product: Product = savedStateHandle.get<Product>("product")
@@ -36,6 +39,15 @@ class EditProductViewModel @Inject constructor(
 
     val selectedRolesText: LiveData<String> = _selectedRoles.map { roles ->
         if (roles.isEmpty()) "" else roles.joinToString(", ")
+    }
+
+    private val _useMoney = MutableLiveData(
+        sharedPreferences.getBoolean(useMoneyPrefKey, false)
+    )
+    val useMoney: LiveData<Boolean> get() = _useMoney
+
+    fun checkMoneySetting(){
+        _useMoney.value = sharedPreferences.getBoolean(useMoneyPrefKey, false)
     }
 
     fun updateSelectedRoles(newRoles: Set<String>) {

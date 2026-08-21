@@ -23,8 +23,8 @@ import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.UserSessionManager
 import de.muenchen.appcenter.nimux.util.showEnterUserPin
-import de.muenchen.appcenter.nimux.view.main.home.FaceReconFragment
-import de.muenchen.appcenter.nimux.view.main.home.FaceReconFragmentDirections
+import androidx.preference.PreferenceManager
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import javax.inject.Inject
 import kotlin.math.sqrt
 
@@ -84,7 +84,10 @@ class OverviewFragment : Fragment(), OverviewAdapter.OnItemClickListener {
         val options =
             FirestoreRecyclerOptions.Builder<User>().setQuery(userQuery, User::class.java).build()
 
-        adapter = OverviewAdapter(options)
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, true)
+
+        adapter = OverviewAdapter(options, useMoney)
         adapter.setOnItemClickListener(this)
         binding.overviewRv.adapter = adapter
     }
@@ -121,20 +124,27 @@ class OverviewFragment : Fragment(), OverviewAdapter.OnItemClickListener {
 }
 
 
-class OverviewAdapter internal constructor(options: FirestoreRecyclerOptions<User>) :
-    FirestoreRecyclerAdapter<User, OverviewAdapter.OverviewViewHolder>(options) {
+class OverviewAdapter internal constructor(
+    options: FirestoreRecyclerOptions<User>,
+    private val useMoney: Boolean
+) : FirestoreRecyclerAdapter<User, OverviewAdapter.OverviewViewHolder>(options) {
 
     inner class OverviewViewHolder internal constructor(private val view: View) :
         RecyclerView.ViewHolder(view) {
-        internal fun setAttrs(
-            user: User,
-        ) {
+
+        internal fun setAttrs(user: User) {
             view.findViewById<TextView>(R.id.overview_item_name).text = user.name
-            view.findViewById<TextView>(R.id.overview_item_role).text = (if (user.roles.isEmpty()) "" else user.roles.joinToString(", ")) as CharSequence?
-            if (user.showCredit)
-                view.findViewById<TextView>(R.id.overview_item_credit).text =
-                    String.format("%.2f", user.toPay) + " €"
-            else view.findViewById<TextView>(R.id.overview_item_credit).visibility = View.GONE
+            view.findViewById<TextView>(R.id.overview_item_role).text =
+                if (user.roles.isEmpty()) "" else user.roles.joinToString(", ")
+
+            val creditTextView = view.findViewById<TextView>(R.id.overview_item_credit)
+
+            if (useMoney && user.showCredit) {
+                creditTextView.visibility = View.VISIBLE
+                creditTextView.text = String.format("%.2f", user.toPay) + " €"
+            } else {
+                creditTextView.visibility = View.GONE
+            }
 
             view.findViewById<MaterialCardView>(R.id.overview_item_card).setOnClickListener {
                 val pos = layoutPosition

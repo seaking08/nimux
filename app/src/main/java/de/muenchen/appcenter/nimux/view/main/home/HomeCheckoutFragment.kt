@@ -18,6 +18,7 @@ import de.muenchen.appcenter.nimux.databinding.FragmentHomeCheckoutBinding
 import de.muenchen.appcenter.nimux.datasources.DonateItemDataSource
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.faceRecognitionPrefKey
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -80,6 +81,9 @@ class HomeCheckoutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, true)
+        binding.useMoney = useMoney
 
         if (HomeCheckoutFragmentArgs.fromBundle(requireArguments()).productDetected) {
             setupButtons()
@@ -130,6 +134,8 @@ class HomeCheckoutFragment : Fragment() {
             timer.cancel()
         val metrics = resources.displayMetrics
         val px = metrics.heightPixels
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, false)
 
         binding.checkoutCard.animate().translationY(px.toFloat())
             .setDuration(resources.getInteger(R.integer.motion_short).toLong())
@@ -140,7 +146,8 @@ class HomeCheckoutFragment : Fragment() {
                         usersRepository.payProduct(binding.user!!.stringSortID,
                             binding.product!!,
                             faceDetected = args.faceDetected,
-                            productDetected = args.productDetected)
+                            productDetected = args.productDetected,
+                            useMoney = useMoney)
                     }
                 }
 

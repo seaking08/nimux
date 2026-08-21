@@ -38,8 +38,6 @@
                 android:layout_height="match_parent"
                 android:padding="@dimen/default_layout_padding">
 
-
-                <!-- HEADER LAYOUT MIT NAME, ROLLE UND ICON -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/header_layout"
                     android:layout_width="match_parent"
@@ -68,7 +66,6 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <!-- NEU: Produktrolle sauber unter dem Namen -->
                     <TextView
                         android:id="@+id/product_item_role"
                         android:layout_width="0dp"
@@ -92,6 +89,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/group_seperation_margin"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     android:text="@string/price_title"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/header_layout" />
@@ -102,6 +100,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/group_margin"
                     android:text="@{viewModel.sPrice}"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     android:textAppearance="@style/TextAppearance.MyTheme.Headline4Normal"
                     android:textColor="?colorOnBackground"
                     android:textStyle="normal"

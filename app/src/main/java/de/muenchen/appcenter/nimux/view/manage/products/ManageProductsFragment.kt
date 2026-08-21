@@ -33,9 +33,11 @@ import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.graphics.Color
+import androidx.preference.PreferenceManager
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 
 @AndroidEntryPoint
 class ManageProductsFragment : Fragment(), ManageProductsAdapter.OnItemClickListener {
@@ -83,7 +85,10 @@ class ManageProductsFragment : Fragment(), ManageProductsAdapter.OnItemClickList
             Product::class.java
         ).build()
 
-        adapter = ManageProductsAdapter(options)
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, true)
+
+        adapter = ManageProductsAdapter(options, useMoney)
         binding.productListRv.adapter = adapter
         adapter.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
@@ -145,7 +150,7 @@ class ManageProductsFragment : Fragment(), ManageProductsAdapter.OnItemClickList
     }
 }
 
-class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptions<Product>) :
+class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptions<Product>, private val useMoney: Boolean) :
     FirestoreRecyclerAdapter<Product, ManageProductsAdapter.ManageProductsViewHolder>(options) {
 
     private lateinit var listener: OnItemClickListener
@@ -178,8 +183,14 @@ class ManageProductsAdapter internal constructor(options: FirestoreRecyclerOptio
             roles: List<String>?,
         ) {
             view.findViewById<TextView>(R.id.list_manage_product_name).text = name
-            view.findViewById<TextView>(R.id.list_manage_product_price).text =
-                String.format(view.context.getString(R.string.money), price)
+            val priceTextView = view.findViewById<TextView>(R.id.list_manage_product_price)
+            if (useMoney) {
+                priceTextView.visibility = View.VISIBLE
+                priceTextView.text = String.format(view.context.getString(R.string.money), price)
+            } else {
+                priceTextView.visibility = View.GONE
+            }
+
             val roleTextView = view.findViewById<TextView>(R.id.list_manage_product_role)
             if (roles.isNullOrEmpty()) {
                 roleTextView.visibility = View.GONE

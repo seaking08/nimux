@@ -1,5 +1,6 @@
 package de.muenchen.appcenter.nimux.viewmodel.manage.users
 
+import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,17 +11,24 @@ import de.muenchen.appcenter.nimux.model.Role
 import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.md5
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AddUserViewModel @Inject constructor(
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     val nameText = MutableLiveData("")
     val pinText = MutableLiveData("")
     val confirmPinText = MutableLiveData("")
+
+    private val _useMoney = MutableLiveData(
+        sharedPreferences.getBoolean(useMoneyPrefKey, false)
+    )
+    val useMoney: LiveData<Boolean> get() = _useMoney
 
     private val _selectedRoles = MutableLiveData<Set<String>>(emptySet())
     val selectedRoles: LiveData<Set<String>> get() = _selectedRoles

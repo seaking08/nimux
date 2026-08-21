@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -30,7 +31,9 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -121,6 +124,9 @@ const val userPrefsScanProductsPreferenceKey = "scan_products_pref"
 const val userPrefsFaceReplacePinPreferenceKey = "facial_scan_replaces_pin_pref"
 
 const val systemColorPrefKey = "SYSTEM_COLOR_PREF_KEY"
+const val systemThemePrefKey = "SYSTEM_THEME_PREF_KEY"
+
+const val useMoneyPrefKey = "PREFERENCE_USE_MONEY"
 
 fun hideKeyboard(activity: Activity) {
     val inputMethodManager =
@@ -582,6 +588,7 @@ class UserInteractionAwareCallback(private val originalCallback: Window.Callback
 class MultiOrderProductAdapter(
     private val onPlusClicked: (item: MultiOrderProductListWithProduct) -> Unit,
     private val onMinClicked: (item: MultiOrderProductListWithProduct) -> Unit,
+    private val useMoney: Boolean
 ) : ListAdapter<MultiOrderProductListWithProduct, MultiOrderProductAdapter.MultiOrderProductViewHolder>(
     DiffCallback
 ) {
@@ -589,11 +596,13 @@ class MultiOrderProductAdapter(
     class MultiOrderProductViewHolder(
         private var binding: MultiOrderProductRvLayoutBinding,
         private val listeners: PlusMinusListeners,
+        private val useMoney: Boolean
     ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
 
         fun bind(item: MultiOrderProductListWithProduct) {
             binding.product = item.product
             binding.multiOrder = item.multiOrderProductList
+            binding.useMoney = useMoney
             binding.executePendingBindings()
 
             val context = binding.root.context
@@ -637,7 +646,7 @@ class MultiOrderProductAdapter(
                 override fun minus(pos: Int) {
                     onMinClicked(getItem(pos))
                 }
-            })
+            }, useMoney)
         return viewHolder
     }
 
@@ -670,20 +679,25 @@ class MultiOrderProductAdapter(
     }
 }
 
-class MultiOrderOverviewAdapter :
+class MultiOrderOverviewAdapter(private val useMoney: Boolean) :
     ListAdapter<MultiOrderProductListWithProduct, MultiOrderOverviewAdapter.MultiOrderOverviewViewHolder>(
         DiffCallback
     ) {
-    class MultiOrderOverviewViewHolder(private val binding: MultiOrderOverviewRvLayoutBinding) :
+    class MultiOrderOverviewViewHolder(private val binding: MultiOrderOverviewRvLayoutBinding, private val useMoney: Boolean) :
         RecyclerView.ViewHolder(binding.root) {
 
         @SuppressLint("SetTextI18n")
         fun bind(item: MultiOrderProductListWithProduct) {
             binding.item = item
-            binding.productCostSum.text = String.format(
-                "%.2f",
-                item.multiOrderProductList.amount.toDouble() * item.multiOrderProductList.price
-            ) + " €"
+            if (useMoney) {
+                binding.productCostSum.visibility = View.VISIBLE
+                binding.productCostSum.text = String.format(
+                    "%.2f",
+                    item.multiOrderProductList.amount.toDouble() * item.multiOrderProductList.price
+                ) + " €"
+            } else {
+                binding.productCostSum.visibility = View.GONE
+            }
             binding.executePendingBindings()
         }
     }
@@ -717,7 +731,8 @@ class MultiOrderOverviewAdapter :
                 LayoutInflater.from(parent.context),
                 parent,
                 false
-            )
+            ),
+            useMoney
         )
     }
 

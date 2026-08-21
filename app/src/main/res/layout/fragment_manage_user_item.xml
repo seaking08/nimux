@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -63,6 +62,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/group_seperation_margin"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     android:text="@string/credit"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/manage_user_role" />
@@ -73,6 +73,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="@{viewModel.userPay}"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     android:textAppearance="@style/TextAppearance.MyTheme.Headline4"
                     android:textColor="?colorOnBackground"
                     app:layout_constraintStart_toStartOf="parent"
@@ -85,6 +86,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/group_seperation_margin"
                     android:text="@string/select_credit"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/manage_user_topay" />
 
@@ -95,6 +97,7 @@
                     android:layout_marginTop="@dimen/group_margin"
                     android:checkedButton="@={viewModel.checkedButton}"
                     android:onCheckedChanged="@{() -> viewModel.checkedChanged()}"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/select_amount_title"
                     app:selectionRequired="true"
@@ -147,7 +150,7 @@
                     android:layout_width="125dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/group_margin"
-                    android:visibility="gone"
+                    android:visibility="@{viewModel.useMoney &amp;&amp; viewModel.customAmountChecked ? View.VISIBLE : View.GONE}"
                     app:endIconDrawable="@drawable/ic_round_euro_symbol_24"
                     app:endIconMode="custom"
                     app:endIconTint="?colorOnSurface"
@@ -188,6 +191,7 @@
                 android:layout_height="@dimen/button_height"
                 android:onClick="@{() -> viewModel.payClickCheck()}"
                 android:text="@string/add_credit"
+                android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

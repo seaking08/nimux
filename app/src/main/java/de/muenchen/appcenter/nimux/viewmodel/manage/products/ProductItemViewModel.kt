@@ -1,5 +1,6 @@
 package de.muenchen.appcenter.nimux.viewmodel.manage.products
 
+import android.content.SharedPreferences
 import androidx.databinding.ObservableInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,6 +12,7 @@ import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,7 +20,8 @@ import javax.inject.Inject
 class ProductItemViewModel @Inject constructor(
     private val productsRepository: ProductsRepository,
     private val usersRepository: UsersRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     var product: Product = savedStateHandle.get<Product>("currentProduct")
@@ -34,6 +37,11 @@ class ProductItemViewModel @Inject constructor(
     private val _sStock = MutableLiveData(product.currentStock.toString())
     val sStock: LiveData<String>
         get() = _sStock
+
+    private val _useMoney = MutableLiveData(
+        sharedPreferences.getBoolean(useMoneyPrefKey, false)
+    )
+    val useMoney: LiveData<Boolean> get() = _useMoney
 
     private val _sRefill1 = MutableLiveData(product.refillSize.toString())
     val sRefill1: LiveData<String>

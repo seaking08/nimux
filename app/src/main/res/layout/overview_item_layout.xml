@@ -1,57 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/overview_item_card"
-        android:theme="@style/backgroundColoredCardStyleTheme"
+    <data>
+
+        <import type="android.view.View" />
+
+        <import type="android.text.TextUtils" />
+
+        <variable
+            name="viewModel"
+            type="de.muenchen.appcenter.nimux.viewmodel.manage.users.ManageUserItemViewModel" />
+    </data>
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/overview_card_margin_startend"
-        android:layout_marginTop="@dimen/side_margin"
-        android:layout_marginEnd="@dimen/overview_card_margin_startend"
-        android:layout_marginBottom="@dimen/side_margin">
+        android:layout_height="wrap_content">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/overview_item_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/card_border_padding">
+            android:layout_marginStart="@dimen/overview_card_margin_startend"
+            android:layout_marginTop="@dimen/side_margin"
+            android:layout_marginEnd="@dimen/overview_card_margin_startend"
+            android:layout_marginBottom="@dimen/side_margin"
+            android:theme="@style/backgroundColoredCardStyleTheme">
 
-            <TextView
-                android:id="@+id/overview_item_name"
-                android:layout_width="0dp"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/name"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                app:layout_constraintEnd_toStartOf="@id/overview_item_credit"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:padding="@dimen/card_border_padding">
 
-            <TextView
-                android:id="@+id/overview_item_role"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Rolle"
-                android:textAppearance="?attr/textAppearanceBody2"
-                android:textColor="?android:attr/textColorSecondary"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/overview_item_credit"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/overview_item_name" />
+                <TextView
+                    android:id="@+id/overview_item_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/name"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    app:layout_constraintEnd_toStartOf="@id/overview_item_credit"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/overview_item_credit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0,00€"
-                android:textAppearance="?attr/textAppearanceBody1"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                <TextView
+                    android:id="@+id/overview_item_role"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Rolle"
+                    android:textAppearance="?attr/textAppearanceBody2"
+                    android:textColor="?android:attr/textColorSecondary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/overview_item_credit"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/overview_item_name" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
-</FrameLayout>
+                <TextView
+                    android:id="@+id/overview_item_credit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0,00€"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
+</layout>

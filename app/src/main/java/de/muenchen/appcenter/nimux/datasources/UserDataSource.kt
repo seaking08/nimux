@@ -192,11 +192,29 @@ class UserDataSource @Inject constructor(
         amount: Int = 1,
         faceDetected: Boolean,
         productDetected: Boolean,
+        useMoney: Boolean
     ) {
-        userRef.document(userID).get().addOnSuccessListener {
-            userRef.document(userID)
-                .update("toPay", (it.getDouble("toPay")!! - product.price * amount).round(2))
+        if (!useMoney) {
+            userRef.document(userID).get().addOnSuccessListener {
+                userRef.document(userID)
+                    .update("toPay", 0.0)
+                logUserAction(
+                    userID,
+                    userlog_description_payed + "$amount * " + product.name
+                )
+            }
+        } else {
+            userRef.document(userID).get().addOnSuccessListener {
+                userRef.document(userID)
+                    .update("toPay", (it.getDouble("toPay")!! - product.price * amount).round(2))
+                logUserAction(
+                    userID,
+                    userlog_description_payed + "$amount * " + product.name,
+                    product.price * amount
+                )
+            }
         }
+
         val curUser = getUser(userID)
         productDataSource.productBought(
             userID,
@@ -205,11 +223,6 @@ class UserDataSource @Inject constructor(
             faceDetected,
             productDetected,
             curUser
-        )
-        logUserAction(
-            userID,
-            userlog_description_payed + "$amount * " + product.name,
-            product.price * amount
         )
 
     }
@@ -313,6 +326,7 @@ class UserDataSource @Inject constructor(
     suspend fun payMultiProduct(
         userId: String,
         multiOrderProductListWithProduct: List<MultiOrderProductListWithProduct>,
+        useMoney: Boolean
     ) {
         var totalPay = 0.0
         var productsString = ""
@@ -332,16 +346,22 @@ class UserDataSource @Inject constructor(
                 productDetected = false, curUser
             )
         }
-        userRef.document(userId).get().addOnSuccessListener {
+        if (useMoney){userRef.document(userId).get().addOnSuccessListener {
             userRef.document(userId)
                 .update("toPay", (it.getDouble("toPay")!! - totalPay).round(2))
-        }
-
-        logUserAction(
-            userId,
-            "Mehrfachkauf: $productsString",
-            totalPay
-        )
+            logUserAction(
+                userId,
+                "Mehrfachkauf: $productsString",
+                totalPay
+            )
+        }}else{userRef.document(userId).get().addOnSuccessListener {
+            userRef.document(userId)
+                .update("toPay", 0.0)
+            logUserAction(
+                userId,
+                "Mehrfachkauf: $productsString",
+            )
+        }}
     }
 
     suspend fun deleteRoleFromUser(roleName: String) {

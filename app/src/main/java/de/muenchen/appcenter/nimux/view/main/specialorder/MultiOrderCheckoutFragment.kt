@@ -22,6 +22,7 @@ import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.MultiOrderOverviewAdapter
 import de.muenchen.appcenter.nimux.util.faceRecognitionPrefKey
 import de.muenchen.appcenter.nimux.util.round
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -57,10 +58,13 @@ class MultiOrderCheckoutFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, false)
+        binding.useMoney = useMoney
         binding.user = MultiOrderCheckoutFragmentArgs.fromBundle(requireArguments()).currentUser
         boughtProducts =
             MultiOrderCheckoutFragmentArgs.fromBundle(requireArguments()).boughtProducts.toList()
-        overviewAdapter = MultiOrderOverviewAdapter()
+        overviewAdapter = MultiOrderOverviewAdapter(useMoney)
         binding.overviewRv.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
@@ -77,7 +81,7 @@ class MultiOrderCheckoutFragment : Fragment() {
             String.format("%.2f", totalSum) + " €"
         binding.newCredit.text =
             String.format("%.2f", binding.user!!.toPay - totalSum) + " €"
-        if (binding.user!!.toPay - totalSum < 0) binding.homeCheckoutLowCreditWarnSoft.visibility =
+        if (binding.user!!.toPay - totalSum < 0 && useMoney) binding.homeCheckoutLowCreditWarnSoft.visibility =
             View.VISIBLE
 
         if (binding.user?.toPay!!.minus(totalSum) < 0.0) {
@@ -139,6 +143,9 @@ class MultiOrderCheckoutFragment : Fragment() {
         val px = metrics.heightPixels
 //        Log.d("PixelLog", "${metrics.widthPixels} ${metrics.heightPixels} $px")
 
+
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, false)
         binding.multiOrderCheckoutCard.animate().translationY(px.toFloat())
             .setDuration(resources.getInteger(R.integer.motion_short).toLong())
             .setListener(object : Animator.AnimatorListener {
@@ -146,7 +153,7 @@ class MultiOrderCheckoutFragment : Fragment() {
                     lifecycleScope.launch(Dispatchers.IO) {
                         usersRepository.buyMultipleProducts(
                             binding.user!!.stringSortID,
-                            boughtProducts
+                            boughtProducts, useMoney
                         )
                     }
                 }

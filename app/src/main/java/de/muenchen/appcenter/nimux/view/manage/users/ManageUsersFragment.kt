@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
@@ -24,6 +25,7 @@ import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentManageUsersBinding
 import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import de.muenchen.appcenter.nimux.viewmodel.manage.users.ManageUsersViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -112,7 +114,10 @@ class ManageUsersFragment : Fragment(), ManageUserAdapter.OnItemClickListener {
             })
         }
 
-        adapter = ManageUserAdapter(emptyList(), this)
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, false)
+
+        adapter = ManageUserAdapter(emptyList(), this, useMoney)
         binding.userListRv.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -141,7 +146,8 @@ class ManageUsersFragment : Fragment(), ManageUserAdapter.OnItemClickListener {
 
 class ManageUserAdapter(
     private var users: List<User>,
-    private val listener: OnItemClickListener
+    private val listener: OnItemClickListener,
+    private val useMoney: Boolean
 ) : RecyclerView.Adapter<ManageUserAdapter.ManageUserViewHolder>() {
 
     fun updateData(newUsers: List<User>) {
@@ -165,11 +171,18 @@ class ManageUserAdapter(
         fun setAttrs(user: User) {
             view.findViewById<TextView>(R.id.list_user_name).text = user.name
             view.findViewById<TextView>(R.id.list_user_role).text = user.roles.joinToString(", ")
-            view.findViewById<TextView>(R.id.list_user_pay).text =
-                (view.resources.getString(R.string.credit) + " " + String.format(
+
+            val payTextView = view.findViewById<TextView>(R.id.list_user_pay)
+
+            if (useMoney) {
+                payTextView.visibility = View.VISIBLE
+                payTextView.text = (view.resources.getString(R.string.credit) + " " + String.format(
                     "%.2f",
                     user.toPay
                 ) + "€")
+            } else {
+                payTextView.visibility = View.GONE
+            }
 
             view.findViewById<MaterialCardView>(R.id.manage_user_list_card).setOnClickListener {
                 val position = adapterPosition

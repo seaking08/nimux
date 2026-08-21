@@ -116,6 +116,7 @@
                     android:checked="@{viewModel.showCredit}"
                     android:onClick="@{()->viewModel.switchShowCredit()}"
                     android:text="@string/credit_visible_switch"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     app:layout_constraintTop_toBottomOf="@id/hint_text_top" />
 
                 <com.google.android.material.materialswitch.MaterialSwitch

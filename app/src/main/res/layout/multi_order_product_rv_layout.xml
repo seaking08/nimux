@@ -18,6 +18,10 @@
         <!--        <variable-->
         <!--            name="listener" />-->
 
+        <variable
+            name="useMoney"
+            type="Boolean" />
+
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -66,6 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="12dp"
                 android:text="@{String.format(@string/money, product.price)}"
+                android:visibility="@{useMoney ? View.VISIBLE : View.GONE}"
                 android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                 app:layout_constraintBaseline_toBaselineOf="@id/product_name"
                 app:layout_constraintEnd_toEndOf="parent"

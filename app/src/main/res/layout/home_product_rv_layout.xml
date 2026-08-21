@@ -13,6 +13,9 @@
         <variable
             name="listener"
             type="de.muenchen.appcenter.nimux.view.main.home.ProductHomeAdapter.ProductItemClickListener" />
+        <variable
+            name="useMoney"
+            type="Boolean" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -70,6 +73,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/side_margin"
                     android:text="@{String.format(@string/money, product.price)}"
+                    android:visibility="@{useMoney ? View.VISIBLE : View.GONE}"
                     android:textAppearance="?textAppearanceBody1"
                     android:transitionName="@{@string/home_product_price_transition_name(product.stringSortID)}"
                     app:layout_constraintBaseline_toBaselineOf="@id/home_product_item_name"

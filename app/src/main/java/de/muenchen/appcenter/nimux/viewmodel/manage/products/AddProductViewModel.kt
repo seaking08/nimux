@@ -1,5 +1,6 @@
 package de.muenchen.appcenter.nimux.viewmodel.manage.products
 
+import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,13 +9,15 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AddProductViewModel @Inject constructor(
     private val usersRepository: UsersRepository,
-    private val productsRepository: ProductsRepository
+    private val productsRepository: ProductsRepository,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     private val _addProductDone = MutableLiveData<Boolean>()
@@ -35,6 +38,10 @@ class AddProductViewModel @Inject constructor(
     val productStock = MutableLiveData("")
     val productRefillSize = MutableLiveData("")
 
+    private val _useMoney = MutableLiveData(
+        sharedPreferences.getBoolean(useMoneyPrefKey, false)
+    )
+    val useMoney: LiveData<Boolean> get() = _useMoney
 
     private val _selectedRoles = MutableLiveData<Set<String>>(emptySet())
     val selectedRoles: LiveData<Set<String>> get() = _selectedRoles
@@ -69,7 +76,7 @@ class AddProductViewModel @Inject constructor(
 
     fun addProduct() {
         val name = productName.value.orEmpty().trim()
-        val priceStr = productPrice.value.orEmpty()
+        val priceStr = productPrice.value.orEmpty().ifEmpty { "0,00" }
         val stockStr = productStock.value.orEmpty()
         val refillStr = productRefillSize.value.orEmpty()
         val isRefillable = refillable.value ?: false

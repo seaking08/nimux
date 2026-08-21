@@ -439,4 +439,12 @@
     <string name="folder_social">Social Media &amp; Web</string>
     <string name="folder_symbols">Symbols &amp; Extras</string>
     <string name="select_icon">Select one icon</string>
+    <string name="use_money_feature_title_activate">Activate Money-Feature?</string>
+    <string name="use_money_feature_text_activate">Do you really want to use the money feature?</string>
+    <string name="use_money_feature_title_deactivate">Deactivate Money-Feature?</string>
+    <string name="use_money_feature_text_deactivate">"Do you really want to deactivate the money feature? The credit balance won't be visible anymore, but saved in background.</string>
+    <string name="use_money">Use money</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
 </resources>

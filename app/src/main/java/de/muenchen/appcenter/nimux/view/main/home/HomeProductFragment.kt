@@ -26,6 +26,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -57,6 +58,7 @@ import de.muenchen.appcenter.nimux.util.hideKeyboard
 import de.muenchen.appcenter.nimux.util.round
 import de.muenchen.appcenter.nimux.util.showEnterUserPin
 import de.muenchen.appcenter.nimux.util.showKeyboard
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import de.muenchen.appcenter.nimux.view.manage.products.iconMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -119,6 +121,9 @@ class HomeProductFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, false)
+        binding.useMoney = useMoney
         setUpSingleBuy()
         binding.otherOptionsButtonHomeProduct.setOnClickListener { fab ->
             showFabPopUpMenu(fab, R.menu.home_product_other_options_menu)
@@ -171,6 +176,8 @@ class HomeProductFragment : Fragment() {
             }
 
             allProducts = (prodsForRole + prodsGeneral).distinctBy { it.stringSortID }
+            val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, false)
 
             productAdapter =
                 ProductHomeAdapter(
@@ -202,7 +209,7 @@ class HomeProductFragment : Fragment() {
                                 }
                             }
                         }
-                    })
+                    }, useMoney)
 
             binding.homeProductRecyclerview.adapter = productAdapter
 
@@ -295,9 +302,12 @@ class HomeProductFragment : Fragment() {
                 }
 
                 R.id.menu_action_multi_buy -> {
+                    val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    val useMoney = sharedPrefs.getBoolean(useMoneyPrefKey, false)
+                    binding.useMoney = useMoney
                     binding.otherOptionsButtonHomeProduct.text = getString(R.string.multi_buy_title)
                     if (currentSelectedOption != R.id.menu_action_multi_buy)
-                        switchToMultiBuy()
+                        switchToMultiBuy(useMoney)
                 }
                 // could be integrated if needed
 //                R.id.menu_action_dono -> {
@@ -332,8 +342,8 @@ class HomeProductFragment : Fragment() {
         binding.donoLayout.visibility = View.VISIBLE
     }
 
-    private fun switchToMultiBuy() {
-        if (binding.productRv.isEmpty()) setUpMultiBuy()
+    private fun switchToMultiBuy(useMoney: Boolean) {
+        if (binding.productRv.isEmpty()) setUpMultiBuy(useMoney)
         val fadeThrough = MaterialFadeThrough()
         TransitionManager.beginDelayedTransition((view) as ViewGroup, fadeThrough)
         binding.singleBuyLayout.visibility = View.GONE
@@ -592,7 +602,7 @@ class HomeProductFragment : Fragment() {
         }
     }
 
-    private fun setUpMultiBuy() {
+    private fun setUpMultiBuy(useMoney: Boolean) {
         binding.confirmPurchaseButton.setOnClickListener {
             val comingFromFace =
                 HomeProductFragmentArgs.fromBundle(requireArguments()).fromFaceRecon
@@ -607,7 +617,7 @@ class HomeProductFragment : Fragment() {
                 }
             }
         }
-        multiOrderOverViewAdapter = MultiOrderOverviewAdapter()
+        multiOrderOverViewAdapter = MultiOrderOverviewAdapter(useMoney)
         multiOrderAdapter = MultiOrderProductAdapter({
             if (it.multiOrderProductList.amount < 300) {
                 it.multiOrderProductList.amount
@@ -620,7 +630,8 @@ class HomeProductFragment : Fragment() {
                 --it.multiOrderProductList.amount
                 plusMinusClicked(it)
             }
-        })
+        },
+            useMoney)
         binding.productRv.apply {
             adapter = multiOrderAdapter
             setHasFixedSize(true)
@@ -750,7 +761,8 @@ class HomeProductFragment : Fragment() {
 
 class ProductHomeAdapter(
     private var products: List<Product>,
-    private val listener: ProductItemClickListener
+    private val listener: ProductItemClickListener,
+    private val useMoney: Boolean
 ) : RecyclerView.Adapter<ProductHomeAdapter.ProductViewHolder>() {
 
     @SuppressLint("NotifyDataSetChanged")
@@ -766,6 +778,7 @@ class ProductHomeAdapter(
         fun bind(product: Product) {
             binding.product = product
             binding.listener = listener
+            binding.useMoney = useMoney
             binding.executePendingBindings()
 
             val context = binding.root.context

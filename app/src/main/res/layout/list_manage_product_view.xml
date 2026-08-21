@@ -10,6 +10,9 @@
         <variable
             name="product"
             type="de.muenchen.appcenter.nimux.model.Product" />
+        <variable
+            name="viewModel"
+            type="de.muenchen.appcenter.nimux.viewmodel.manage.products.ProductItemViewModel" />
     </data>
 
     <FrameLayout
@@ -50,6 +53,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/list_manage_product_price"
                         android:layout_marginTop="8dp"
+                        android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                         tools:text="00,00€"
                         android:textAppearance="?attr/textAppearanceBody2"/>
 

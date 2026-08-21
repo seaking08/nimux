@@ -101,6 +101,42 @@
             </LinearLayout>
         </HorizontalScrollView>
 
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/settings_theme_toggle_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/default_margin"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/default_margin"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/theme_button_light"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/theme_light" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/theme_button_system"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/theme_system" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/theme_button_dark"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/theme_dark" />
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -150,6 +186,14 @@
             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/settngs_use_money_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/default_margin"
+            android:layout_marginEnd="@dimen/default_margin"
+            android:text="@string/use_money"/>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/settings_change_pw"

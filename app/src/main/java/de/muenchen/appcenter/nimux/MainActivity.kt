@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.WindowCompat
 import androidx.core.view.get
@@ -39,6 +40,7 @@ import de.muenchen.appcenter.nimux.util.faceRecognitionPrefKey
 import de.muenchen.appcenter.nimux.util.hideKeyboard
 import de.muenchen.appcenter.nimux.util.standbyBoolPrefKey
 import de.muenchen.appcenter.nimux.util.systemColorPrefKey
+import de.muenchen.appcenter.nimux.util.systemThemePrefKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,6 +81,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         super.onCreate(savedInstanceState)
+
+        val selectedTheme = sharedPrefs.getInt(systemThemePrefKey, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        AppCompatDelegate.setDefaultNightMode(selectedTheme)
 
         setContentView(R.layout.activity_main)
 

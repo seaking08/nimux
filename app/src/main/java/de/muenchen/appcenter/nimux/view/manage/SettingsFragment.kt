@@ -9,7 +9,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -27,9 +29,11 @@ import de.muenchen.appcenter.nimux.util.LogInLogOutLog
 import de.muenchen.appcenter.nimux.util.UserSessionManager
 import de.muenchen.appcenter.nimux.util.faceRecognitionPrefKey
 import de.muenchen.appcenter.nimux.util.standbyBoolPrefKey
-import de.muenchen.appcenter.nimux.util.systemColorPrefKey // <-- NEU
+import de.muenchen.appcenter.nimux.util.systemColorPrefKey
 import javax.inject.Inject
 import androidx.core.content.edit
+import de.muenchen.appcenter.nimux.util.systemThemePrefKey
+import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
@@ -65,6 +69,7 @@ class SettingsFragment : Fragment() {
             "Eingeloggt als " + userSessionManager.getUserEMail() + " mit Rolle " + userSessionManager.getRole() + " und Daten aus Tenant: " + userSessionManager.getTenantId()
 
         setClickListeners()
+        setUpThemeListener()
         getSavedData()
         setupColorSelection()
     }
@@ -98,6 +103,36 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    private fun setUpThemeListener(){
+        val currentTheme = sharedPrefs.getInt(
+            systemThemePrefKey,
+            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        )
+
+        when (currentTheme) {
+            AppCompatDelegate.MODE_NIGHT_NO -> binding.settingsThemeToggleGroup.check(R.id.theme_button_light)
+            AppCompatDelegate.MODE_NIGHT_YES -> binding.settingsThemeToggleGroup.check(R.id.theme_button_dark)
+            else -> binding.settingsThemeToggleGroup.check(R.id.theme_button_system)
+        }
+
+        binding.settingsThemeToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                val selectedMode = when (checkedId) {
+                    R.id.theme_button_light -> AppCompatDelegate.MODE_NIGHT_NO
+                    R.id.theme_button_dark -> AppCompatDelegate.MODE_NIGHT_YES
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+
+                with(sharedPrefs.edit()) {
+                    putInt(systemThemePrefKey, selectedMode)
+                    apply()
+                }
+
+                AppCompatDelegate.setDefaultNightMode(selectedMode)
+            }
+        }
+    }
+
     private fun performLogOut() {
         userSessionManager.clearSession()
         FirebaseAuth.getInstance().signOut()
@@ -123,6 +158,8 @@ class SettingsFragment : Fragment() {
             sharedPrefs.getBoolean(standbyBoolPrefKey, false)
         binding.settingsScanFaceSwitch.isChecked =
             sharedPrefs.getBoolean(faceRecognitionPrefKey, false)
+        binding.settngsUseMoneySwitch.isChecked =
+            sharedPrefs.getBoolean(useMoneyPrefKey, false)
 
         binding.settingsStandbySwitch.setOnCheckedChangeListener { _, b ->
             with(sharedPrefs.edit()) {
@@ -136,6 +173,54 @@ class SettingsFragment : Fragment() {
                 apply()
             }
         }
+        binding.settngsUseMoneySwitch.setOnCheckedChangeListener(object : CompoundButton.OnCheckedChangeListener {
+            override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
+                var confirmed = false
+
+                if (isChecked) {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.use_money_feature_title_activate))
+                        .setMessage(getString(R.string.use_money_feature_text_activate))
+                        .setPositiveButton(R.string.yes) { _, _ ->
+                            confirmed = true
+                            with(sharedPrefs.edit()) {
+                                putBoolean(useMoneyPrefKey, true)
+                                apply()
+                            }
+                        }
+                        .setNegativeButton(R.string.cancel, null)
+                        .setOnDismissListener {
+                            if (!confirmed) {
+                                buttonView.setOnCheckedChangeListener(null)
+                                buttonView.isChecked = false
+                                buttonView.setOnCheckedChangeListener(this)
+                            }
+                        }
+                        .show()
+
+                } else {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.use_money_feature_title_deactivate))
+                        .setMessage(getString(R.string.use_money_feature_text_deactivate))
+                        .setPositiveButton(R.string.yes) { _, _ ->
+                            confirmed = true
+                            with(sharedPrefs.edit()) {
+                                putBoolean(useMoneyPrefKey, false)
+                                apply()
+                            }
+                        }
+                        .setNegativeButton(R.string.cancel, null)
+                        .setOnDismissListener {
+                            if (!confirmed) {
+                                buttonView.setOnCheckedChangeListener(null)
+                                buttonView.isChecked = true
+                                buttonView.setOnCheckedChangeListener(this)
+                            }
+                        }
+                        .show()
+                }
+            }
+        })
     }
 
     private fun setupColorSelection() {

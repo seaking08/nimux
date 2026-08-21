@@ -107,6 +107,7 @@
                     android:layout_marginBottom="@dimen/default_margin"
                     android:text="@string/price_title"
                     android:textAppearance="?attr/textAppearanceBody1"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     app:layout_constraintBaseline_toBaselineOf="@id/add_product_input_price"
                     app:layout_constraintEnd_toStartOf="@id/add_product_input_price"
                     app:layout_constraintStart_toStartOf="parent" />
@@ -120,6 +121,7 @@
                     android:layout_marginTop="@dimen/group_seperation_margin"
                     android:layout_marginBottom="8dp"
                     android:importantForAutofill="no"
+                    android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                     app:endIconDrawable="@drawable/ic_round_euro_symbol_24"
                     app:endIconMode="custom"
                     app:endIconTint="?colorOnSurface"
@@ -133,6 +135,7 @@
                         android:layout_height="wrap_content"
                         android:importantForAutofill="no"
                         android:inputType="textNoSuggestions|numberDecimal"
+                        android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                         android:maxLength="5"
                         android:singleLine="true"
                         android:text="@={viewModel.productPrice}"

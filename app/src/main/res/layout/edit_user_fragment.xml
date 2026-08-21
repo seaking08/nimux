@@ -70,6 +70,7 @@
                             android:id="@+id/edit_user_credit_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                             android:layout_marginTop="@dimen/default_margin"
                             android:text="@string/credit"
                             android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
@@ -82,6 +83,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/default_margin"
+                            android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                             android:text="@{@string/money(viewModel.user.toPay)}"
                             android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
                             android:textColor="?colorOnBackground"
@@ -242,6 +244,7 @@
                             android:checked="@{viewModel.showCredit}"
                             android:onClick="@{() -> viewModel.switchShowCredit()}"
                             android:text="@string/credit_visible_switch"
+                            android:visibility="@{viewModel.useMoney ? View.VISIBLE : View.GONE}"
                             app:layout_constraintTop_toBottomOf="@id/face_replaces_pin_hint_tv" />
 
                         <com.google.android.material.materialswitch.MaterialSwitch

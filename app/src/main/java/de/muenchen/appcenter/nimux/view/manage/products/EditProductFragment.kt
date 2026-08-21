@@ -30,6 +30,7 @@ class EditProductFragment : Fragment() {
 
     private lateinit var binding: FragmentEditProductBinding
     private var roleManager: RoleManager? = null
+
     @Inject
     lateinit var userSuggestionDataSource: UserSuggestionDataSource
 
@@ -61,7 +62,9 @@ class EditProductFragment : Fragment() {
         roleManager = RoleManager(this, userSuggestionDataSource).also { it.initialize() }
 
         binding.roleInputEditText.setOnClickListener {
-            roleManager?.showMultiSelectRoleDialog(viewModel.selectedRoles.value ?: emptySet()) { updatedRoles ->
+            roleManager?.showMultiSelectRoleDialog(
+                viewModel.selectedRoles.value ?: emptySet()
+            ) { updatedRoles ->
                 viewModel.updateSelectedRoles(updatedRoles)
             }
 
@@ -84,7 +87,7 @@ class EditProductFragment : Fragment() {
         } else {
             setButtonHelper(binding.editProductChooseIconButton, getString(R.string.none), null)
         }
-
+        viewModel.checkMoneySetting()
         setupObservers()
     }
 
