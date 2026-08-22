@@ -205,7 +205,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/default_margin"
                         android:orientation="horizontal"
-                        android:visibility="@{useMoney ? View.VISIBLE : View.GONE}"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/home_checkout_low_credit_warn_soft">

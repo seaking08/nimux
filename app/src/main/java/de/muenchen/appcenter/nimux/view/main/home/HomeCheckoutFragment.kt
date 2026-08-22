@@ -119,6 +119,9 @@ class HomeCheckoutFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        if (::timer.isInitialized) {
+            timer.cancel()
+        }
         super.onDestroyView()
         _binding = null
     }
