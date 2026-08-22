@@ -3,13 +3,20 @@ package de.muenchen.appcenter.nimux.view.main.overview
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
@@ -23,14 +30,12 @@ import de.muenchen.appcenter.nimux.model.User
 import de.muenchen.appcenter.nimux.repositories.UsersRepository
 import de.muenchen.appcenter.nimux.util.UserSessionManager
 import de.muenchen.appcenter.nimux.util.showEnterUserPin
-import androidx.preference.PreferenceManager
 import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
 import javax.inject.Inject
 import kotlin.math.sqrt
 
 @AndroidEntryPoint
 class OverviewFragment : Fragment(), OverviewAdapter.OnItemClickListener {
-
 
     @Inject
     lateinit var usersRepository: UsersRepository
@@ -90,11 +95,26 @@ class OverviewFragment : Fragment(), OverviewAdapter.OnItemClickListener {
         adapter = OverviewAdapter(options, useMoney)
         adapter.setOnItemClickListener(this)
         binding.overviewRv.adapter = adapter
+
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.overview_personalisation_options, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_menu_show_store -> {
+                        findNavController().navigate(OverviewFragmentDirections.actionNavOverviewToStore())
+                        return true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onItemClick(documentSnapshot: DocumentSnapshot, position: Int) {
-
-
         val metrics = resources.displayMetrics
 
         val yInches = metrics.heightPixels / metrics.ydpi
@@ -120,7 +140,6 @@ class OverviewFragment : Fragment(), OverviewAdapter.OnItemClickListener {
                 }
         }
     }
-
 }
 
 

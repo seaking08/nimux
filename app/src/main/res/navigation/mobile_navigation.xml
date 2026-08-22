@@ -45,7 +45,19 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_nav_overview_to_store"
+            app:destination="@+id/nav_user_store"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+    <fragment
+        android:id="@+id/nav_warehouse"
+        android:name="de.muenchen.appcenter.nimux.view.main.warehouse.WarehouseFragment"
+        android:label="@string/warehouse"
+        tools:layout="@layout/fragment_warehouse" />
     <fragment
         android:id="@+id/nav_products"
         android:name="de.muenchen.appcenter.nimux.view.manage.products.ProductsFragment"

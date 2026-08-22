@@ -189,7 +189,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.nav_home_manual,
                     R.id.nav_overview,
                     R.id.nav_statistics,
-                    R.id.nav_user_store,
+                    R.id.nav_warehouse,
                     R.id.nav_manage_stuff,
                     R.id.nav_suggest_users
                 )
@@ -241,8 +241,8 @@ class MainActivity : AppCompatActivity() {
                         navController.navigate(R.id.nav_settings)
                     }
 
-                    R.id.nav_user_store -> {
-                        navController.navigate(R.id.nav_user_store, null, options)
+                    R.id.nav_warehouse -> {
+                        navController.navigate(R.id.nav_warehouse, null, options)
                     }
 
                     R.id.nav_suggest_users -> {
@@ -261,7 +261,7 @@ class MainActivity : AppCompatActivity() {
                     navRail.menu[1].isChecked = true
                 if (destination.id == R.id.nav_statistics)
                     navRail.menu[2].isChecked = true
-                if (destination.id == R.id.nav_user_store)
+                if (destination.id == R.id.nav_warehouse)
                     navRail.menu[3].isChecked = true
                 if (destination.id == R.id.nav_suggest_users)
                     navRail.menu[4].isChecked = true

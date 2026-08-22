@@ -16,10 +16,14 @@
             android:id="@+id/nav_statistics"
             android:icon="@drawable/ic_round_trending_up_24"
             android:title="@string/statistics" />
+        <!--<item-->
+        <!--    android:id="@+id/nav_user_store"-->
+        <!--    android:icon="@drawable/ic_round_store_24"-->
+        <!--    android:title="@string/store_title"/>-->
         <item
-            android:id="@+id/nav_user_store"
-            android:icon="@drawable/ic_round_store_24"
-            android:title="@string/store_title"/>
+            android:id="@+id/nav_warehouse"
+            android:icon="@drawable/ic_baseline_inventory_24"
+            android:title="@string/warehouse"/>
         <item
             android:id="@+id/nav_suggest_users"
             android:icon="@drawable/ic_round_person_add_24"
