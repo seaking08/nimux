@@ -2,34 +2,107 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="name"
+            type="String" />
+        <variable
+            name="isEditMode"
+            type="Boolean" />
+    </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".view.main.warehouse.WarehouseFragment">
 
-        <TextView
-            android:id="@+id/warehouse_title"
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/btnWarehouseSelector"
+            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_margin"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="tmp"
-            android:textSize="24sp"
-            android:textStyle="bold"
+            android:elevation="0dp"
+            android:shadowColor="@android:color/transparent"
+            android:outlineAmbientShadowColor="@android:color/transparent"
+            android:outlineSpotShadowColor="@android:color/transparent"
+            android:contentDescription="Lager auswählen"
+            android:text="Hauptlager"
+            app:icon="@drawable/ic_round_expand_more_24"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_edit_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bearbeiten"
+            android:padding="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save_warehouse"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginEnd="16dp"
+            android:text="Speichern"
+            android:textSize="12sp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:visibility="@{isEditMode ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toBottomOf="@+id/switch_edit_mode"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_delete_warehouse"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="Löschen"
+            android:textColor="?attr/colorError"
+            android:textSize="12sp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:visibility="@{isEditMode ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toTopOf="@+id/btn_save_warehouse"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_save_warehouse"
+            app:layout_constraintEnd_toStartOf="@+id/btn_save_warehouse" />
+
+        <de.muenchen.appcenter.nimux.view.main.store.WarehouseMap
+
+            android:id="@+id/warehouse_map_view"
+
+            android:layout_width="0dp"
+
+            android:layout_height="0dp"
+
+            android:layout_margin="16dp"
+
+            app:layout_constraintTop_toBottomOf="@+id/btnWarehouseSelector"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+
+            app:layout_constraintStart_toStartOf="parent"
+
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_add_warehouse_item"
+            android:id="@+id/fab_edit_warehouse"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="24dp"
             android:contentDescription="tmp"
+            android:visibility="@{isEditMode ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/ic_round_add_shopping_cart_24" />
+            app:srcCompat="@drawable/ic_round_add_24" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

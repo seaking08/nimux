@@ -77,21 +77,9 @@ const val collection_productLogs = "productLogs"
 const val collection_help = "helpCollection"
 const val collection_loginlogoutlogs = "LoginLogoutLogs"
 const val collection_passwordManage = "ManagePWCollection"
+const val collection_warehouse = "Warehouse"
 
 const val coll_stats_main_doc = "document"
-
-const val product_icon_none = 0
-const val product_icon_cup = 1
-const val product_icon_bottle = 2
-const val product_icon_water = 3
-const val product_icon_fastfood = 4
-const val product_icon_fridge = 5
-const val product_icon_cookie = 6
-const val product_icon_egg = 7
-const val product_icon_pizza = 8
-const val product_icon_tea = 9
-const val product_icon_icecream = 10
-const val product_icon_can = 11
 
 const val userlog_description_add_user = "Benutzer hinzugefügt"
 const val userlog_description_deleted = "Benutzer gelöscht"
