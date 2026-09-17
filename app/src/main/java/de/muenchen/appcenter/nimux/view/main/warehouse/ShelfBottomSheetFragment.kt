@@ -67,8 +67,8 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val titleView = view.findViewById<TextView>(R.id.bs_shelf_title)
-        infoView = view.findViewById<TextView>(R.id.bs_shelf_boxes_info)
-        recyclerView = view.findViewById<RecyclerView>(R.id.bs_boxes_recycler)
+        infoView = view.findViewById(R.id.bs_shelf_boxes_info)
+        recyclerView = view.findViewById(R.id.bs_boxes_recycler)
 
         val btnEditShelf = view.findViewById<View>(R.id.btn_edit_shelf)
         btnEditShelf.setOnClickListener {
@@ -115,7 +115,7 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
                     }
                     is LooseProduct -> {
                         showProductSelectionDialog(
-                            title = "Loses Produkt ändern",
+                            title = getString(R.string.change_loose_product),
                             allProducts = allProducts
                         ) { selectedProduct ->
                             clickedItem.product = selectedProduct
@@ -142,7 +142,7 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
             }
         )
         recyclerView.adapter = adapter
-        infoView.text = "Belegte Fächer: ${shelf.items.size}"
+        infoView.text = "${getString(R.string.occupied_slots)}: ${shelf.items.size}"
     }
 
     private fun showEditShelfDialog() {
@@ -158,9 +158,9 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
         etRows.setText(shelf.rowSize.toString())
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Regal bearbeiten")
+            .setTitle(getString(R.string.edit_shelf))
             .setView(dialogView)
-            .setPositiveButton("Speichern") { _, _ ->
+            .setPositiveButton(getString(R.string.save)) { _, _ ->
                 val newName = etName.text.toString()
                 val newCols = etColumns.text.toString().toIntOrNull() ?: shelf.columnSize
                 val newRows = etRows.text.toString().toIntOrNull() ?: shelf.rowSize
@@ -178,7 +178,7 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
 
                 refreshGrid()
             }
-            .setNegativeButton("Abbrechen", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -214,10 +214,10 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Box bearbeiten (R${box.row} | S${box.column})")
+            .setTitle("${getString(R.string.edit_box)} (${box.row} | ${box.column})")
             .setView(dialogView)
-            .setPositiveButton("Fertig", null)
-            .setNegativeButton("Box löschen") { _, _ ->
+            .setPositiveButton(getString(R.string.save), null)
+            .setNegativeButton(getString(R.string.delete_box)) { _, _ ->
                 (selectedShelf?.items as? MutableList)?.remove(box)
                 refreshGrid()
             }
@@ -227,7 +227,7 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
 
         btnAdd.setOnClickListener {
             showProductSelectionDialog(
-                title = "Produkt zur Box hinzufügen",
+                title = getString(R.string.add_product_to_box),
                 allProducts = allProducts
             ) { selectedProduct ->
                 (box.products).add(selectedProduct)
@@ -244,35 +244,35 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
     }
 
     private fun showItemInfoDialog(item: ShelfItem) {
-        val title = "Fach (R${item.row} | S${item.column})"
+        val title = "${getString(R.string.slot)} (${item.row} | ${item.column})"
         val message = when (item) {
             is Box -> if (item.products.isNotEmpty()) {
-                "Inhalt:\n" + item.products.joinToString("\n") { "• ${it.name}" }
+                "${getString(R.string.content)}:\n" + item.products.joinToString("\n") { "- ${it.name}" }
             } else {
-                "Diese Box ist leer."
+                getString(R.string.empty_box)
             }
-            is LooseProduct -> "Loses Produkt:\n• ${item.product.name}"
+            is LooseProduct -> "${getString(R.string.loose_product)}:\n ${item.product.name}"
         }
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)
             .setMessage(message)
-            .setPositiveButton("Schließen", null)
+            .setPositiveButton(getString(R.string.close), null)
             .show()
     }
 
     private fun showCreateItemDialog(row: Int, col: Int) {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Neues Fach belegen (R$row | S$col)")
-            .setMessage("Möchtest du hier eine neue Box oder ein loses Produkt platzieren?")
-            .setPositiveButton("Neue Box platzieren") { _, _ ->
+            .setTitle("${getString(R.string.occupy_new_slot)} ($row | $col)")
+            .setMessage(getString(R.string.new_slot_dialog))
+            .setPositiveButton(getString(R.string.new_box)) { _, _ ->
                 val newBox = Box(row = row, column = col, products = mutableListOf())
                 (selectedShelf?.items as? MutableList)?.add(newBox)
                 refreshGrid()
             }
-            .setNegativeButton("Loses Produkt platzieren") { _, _ ->
+            .setNegativeButton(getString(R.string.new_loose_product)) { _, _ ->
                 showProductSelectionDialog(
-                    title = "Loses Produkt auswählen",
+                    title = getString(R.string.choose_loose_product),
                     allProducts = allProducts
                 ) { selectedProduct ->
                     val newLooseProduct = LooseProduct(row = row, column = col, product = selectedProduct)
@@ -280,7 +280,7 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
                     refreshGrid()
                 }
             }
-            .setNeutralButton("Abbrechen", null)
+            .setNeutralButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -291,9 +291,9 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
     ) {
         if (allProducts.isEmpty()) {
             MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Keine Produkte verfügbar")
-                .setMessage("Es wurden keine Produkte in der Datenbank gefunden.")
-                .setPositiveButton("OK", null)
+                .setTitle(getString(R.string.no_products_title))
+                .setMessage(getString(R.string.no_products_found))
+                .setPositiveButton(getString(R.string.ok), null)
                 .show()
             return
         }
@@ -306,7 +306,7 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
                 val selectedProduct = allProducts[which]
                 onProductSelected(selectedProduct)
             }
-            .setNegativeButton("Abbrechen", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 }
@@ -336,7 +336,7 @@ class ShelfItemGridAdapter(
         val col = position % columns
         val item = gridData[position]
 
-        holder.tvPosition.text = "R$row | S$col"
+        holder.tvPosition.text = "($row | $col)"
         val context = holder.card.context
 
         if (item != null) {

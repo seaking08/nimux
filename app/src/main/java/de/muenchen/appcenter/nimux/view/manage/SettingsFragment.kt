@@ -32,8 +32,10 @@ import de.muenchen.appcenter.nimux.util.standbyBoolPrefKey
 import de.muenchen.appcenter.nimux.util.systemColorPrefKey
 import javax.inject.Inject
 import androidx.core.content.edit
+import androidx.core.os.LocaleListCompat
 import de.muenchen.appcenter.nimux.util.systemThemePrefKey
 import de.muenchen.appcenter.nimux.util.useMoneyPrefKey
+import java.util.Locale
 
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
@@ -66,8 +68,22 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.settingsBuildNumber.text = "App Version " + BuildConfig.VERSION_NAME
         binding.settingsAccountLoggedIn.text =
-            "Eingeloggt als " + userSessionManager.getUserEMail() + " mit Rolle " + userSessionManager.getRole() + " und Daten aus Tenant: " + userSessionManager.getTenantId()
+            getString(R.string.logged_in) + " " + userSessionManager.getUserEMail() + " " + getString(R.string.with_role) + " " + userSessionManager.getRole() + " " + getString(R.string.data_from_tenant) + " " + userSessionManager.getTenantId() + "."
 
+        val currentLocales = AppCompatDelegate.getApplicationLocales()
+        val currentLanguageTag = if (!currentLocales.isEmpty) {
+            currentLocales[0]?.language
+        } else {
+            Locale.getDefault().language
+        }
+
+        val languageText = when (currentLanguageTag) {
+            "en" -> "English"
+            "de" -> "Deutsch"
+            else -> ""
+        }
+
+        binding.tvCurrentLanguage.text = languageText
         setClickListeners()
         setUpThemeListener()
         getSavedData()
@@ -100,6 +116,24 @@ class SettingsFragment : Fragment() {
                     ).show()
                 }
             }
+        }
+        binding.settingsChangeLanguage.setOnClickListener {
+            val languages = arrayOf("Deutsch", "English")
+
+            val currentLocales = AppCompatDelegate.getApplicationLocales()
+            val checkedItem = if (currentLocales.toLanguageTags().contains("en")) 1 else 0
+
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.select_language))
+                .setSingleChoiceItems(languages, checkedItem) { dialog, which ->
+                    val localeTag = if (which == 0) "de" else "en"
+
+                    val appLocale = LocaleListCompat.forLanguageTags(localeTag)
+                    AppCompatDelegate.setApplicationLocales(appLocale)
+
+                    dialog.dismiss()
+                }
+                .show()
         }
     }
 

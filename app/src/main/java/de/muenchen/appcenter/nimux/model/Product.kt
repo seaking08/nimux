@@ -1,7 +1,6 @@
 package de.muenchen.appcenter.nimux.model
 
 import android.os.Parcelable
-import de.muenchen.appcenter.nimux.util.product_icon_none
 import de.muenchen.appcenter.nimux.util.stringToStringSortID
 import kotlinx.parcelize.Parcelize
 

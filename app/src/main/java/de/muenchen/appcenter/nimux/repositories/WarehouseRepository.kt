@@ -44,12 +44,16 @@ class WarehouseRepository @Inject constructor(
         val pillarsData = doc.get("pillars") as? List<Map<String, Any>> ?: emptyList()
         val pillarsList = parsePillars(pillarsData)
 
+        val wallsData = doc.get("walls") as? List<Map<String, Any>> ?: emptyList()
+        val wallsList = parseWalls(wallsData)
+
         return Warehouse(
             name = name,
             length = length,
             width = width,
             shelves = shelvesList,
             pillars = pillarsList,
+            walls = wallsList,
             dockPosition = dockPosition,
             dockOrientation = dockOrientation
         )
@@ -124,6 +128,18 @@ class WarehouseRepository @Inject constructor(
         }.toMutableList()
     }
 
+    private fun parseWalls(wallsData: List<Map<String, Any>>): MutableList<de.muenchen.appcenter.nimux.model.warehouse.Wall> {
+        return wallsData.map { wallMap ->
+            val startMap = wallMap["start"] as? Map<*, *>
+            val endMap = wallMap["end"] as? Map<*, *>
+
+            de.muenchen.appcenter.nimux.model.warehouse.Wall(
+                start = parsePoint(startMap),
+                end = parsePoint(endMap)
+            )
+        }.toMutableList()
+    }
+
     suspend fun saveWarehouseToFirestore(warehouse: Warehouse) {
         val collectionRef = warehouseDataSource.collectionWarehouseRef ?: return
 
@@ -163,6 +179,12 @@ class WarehouseRepository @Inject constructor(
             "pillars" to warehouse.pillars.map { pillar ->
                 mapOf(
                     "position" to mapOf("x" to pillar.position.x, "y" to pillar.position.y)
+                )
+            },
+            "walls" to warehouse.walls.map { wall ->
+                mapOf(
+                    "start" to mapOf("x" to wall.start.x, "y" to wall.start.y),
+                    "end" to mapOf("x" to wall.end.x, "y" to wall.end.y)
                 )
             }
         )

@@ -8,6 +8,11 @@ data class Pillar(
     var position: PointF = PointF(0f,0f)
 )
 
+data class Wall(
+    val start: PointF = PointF(0f,0f),
+    val end: PointF = PointF(0f,0f)
+)
+
 data class Warehouse(
     val name: String = "",
     val length: Int = 0,
@@ -15,4 +20,5 @@ data class Warehouse(
     val shelves: MutableList<Shelf> = mutableListOf(),
     val pillars: MutableList<Pillar> = mutableListOf(),
     var dockPosition: PointF = PointF(150f, 0f),
-    var dockOrientation: DockOrientation = DockOrientation.HORIZONTAL)
+    var dockOrientation: DockOrientation = DockOrientation.HORIZONTAL,
+    val walls: MutableList<Wall> = mutableListOf())

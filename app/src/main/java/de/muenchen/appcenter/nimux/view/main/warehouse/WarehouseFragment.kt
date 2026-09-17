@@ -1,5 +1,6 @@
 package de.muenchen.appcenter.nimux.view.main.warehouse
 
+import android.app.AlertDialog
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,17 +15,24 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.databinding.FragmentWarehouseBinding
 import de.muenchen.appcenter.nimux.model.Product
 import de.muenchen.appcenter.nimux.model.warehouse.Pillar
 import de.muenchen.appcenter.nimux.model.warehouse.Shelf
+import de.muenchen.appcenter.nimux.model.warehouse.Wall
 import de.muenchen.appcenter.nimux.model.warehouse.Warehouse
 import de.muenchen.appcenter.nimux.repositories.ProductsRepository
 import de.muenchen.appcenter.nimux.view.main.store.ShelfBottomSheetFragment
+import de.muenchen.appcenter.nimux.viewmodel.manage.WarehouseViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.any
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class WarehouseFragment : Fragment() {
@@ -79,10 +87,19 @@ class WarehouseFragment : Fragment() {
             binding.isEditMode = isChecked
 
             if (!isChecked) {
-                val currentWarehouse = viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value)
+                val currentWarehouse =
+                    viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value)
                 if (currentWarehouse != null) {
                     viewModel.saveWarehouseToFirestore(currentWarehouse)
-                    Toast.makeText(requireContext(), "Lager '${currentWarehouse.name}' erfolgreich gespeichert", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "${getString(R.string.warehouse)} '${currentWarehouse.name}' ${
+                            getString(
+                                R.string.successfully_saved
+                            )
+                        }",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
@@ -100,28 +117,59 @@ class WarehouseFragment : Fragment() {
         }
 
         binding.btnSaveWarehouse.setOnClickListener {
-            val currentWarehouse = viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value)
+            val currentWarehouse =
+                viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value)
             if (currentWarehouse != null) {
                 viewModel.saveWarehouseToFirestore(currentWarehouse)
-                Toast.makeText(requireContext(), "Lager '${currentWarehouse.name}' gespeichert", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "${getString(R.string.warehouse)} '${currentWarehouse.name}' ${getString(
+                        R.string.successfully_saved
+                    )}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
         binding.btnDeleteWarehouse.setOnClickListener {
-            val currentWarehouse = viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value) ?: return@setOnClickListener
+            val currentWarehouse =
+                viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value)
+                    ?: return@setOnClickListener
 
             MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Lager löschen")
-                .setMessage("Möchtest du das Lager '${currentWarehouse.name}' wirklich unwiderruflich löschen?")
-                .setPositiveButton("Löschen") { _, _ ->
+                .setTitle(getString(R.string.delete_warehouse))
+                .setMessage("${getString(R.string.delete_warehouse_dialog_1)} '${currentWarehouse.name}' ${getString(
+                    R.string.delete_warehouse_dialog_2)}")
+                .setPositiveButton(getString(R.string.delete)) { _, _ ->
                     viewModel.deleteCurrentWarehouse()
-                    Toast.makeText(requireContext(), "Lager '${currentWarehouse.name}' gelöscht", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "${getString(R.string.warehouse)} '${currentWarehouse.name}' ${getString(
+                            R.string.deleted)}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                .setNegativeButton("Abbrechen", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show()
         }
 
         binding.fabEditWarehouse.setOnClickListener { showAddElementChoiceDialog() }
+
+        binding.btnUndo.setOnClickListener {
+            viewModel.undo()
+        }
+
+        binding.btnRedo.setOnClickListener {
+            viewModel.redo()
+        }
+
+        binding.warehouseMapView.setOnStateChangeStartedListener {
+            val currentWarehouse =
+                viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value)
+            if (currentWarehouse != null) {
+                viewModel.saveStateForUndo(currentWarehouse)
+            }
+        }
     }
 
     private fun updateActiveWarehouseView() {
@@ -146,7 +194,7 @@ class WarehouseFragment : Fragment() {
         }
 
         val addNewId = warehouses.size
-        popupMenu.menu.add(0, addNewId, addNewId, "+ Neues Lager erstellen...")
+        popupMenu.menu.add(0, addNewId, addNewId, getString(R.string.add_warehouse))
 
         popupMenu.setOnMenuItemClickListener { menuItem ->
             val selectedId = menuItem.itemId
@@ -162,14 +210,32 @@ class WarehouseFragment : Fragment() {
 
     private fun showCreateNewWarehouseDialog() {
         val input = android.widget.EditText(requireContext()).apply {
-            hint = "Lagername"
+            hint = getString(R.string.name)
         }
-
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Neues Lager anlegen")
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.add_warehouse))
             .setView(input)
-            .setPositiveButton("Erstellen") { _, _ ->
-                val name = input.text.toString().ifBlank { "Neues Lager" }
+            .setPositiveButton(getString(R.string.add), null)
+            .setNegativeButton(getString(R.string.cancel), null)
+            .create()
+
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+
+            val name = input.text.toString().ifBlank {
+                val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
+                val formattedDate = dateFormat.format(Date())
+                "${getString(R.string.new_warehouse)} $formattedDate"
+            }
+
+            val nameExists = viewModel.warehouses.value.any { it.name.equals(name, ignoreCase = true) }
+
+            if (nameExists) {
+                Toast.makeText(requireContext(), getString(R.string.warehouse_exists_dialog), Toast.LENGTH_SHORT).show()
+
+                input.requestFocus()
+                input.selectAll()
+            } else {
                 val newWarehouse = Warehouse(
                     name = name,
                     length = 20,
@@ -177,38 +243,62 @@ class WarehouseFragment : Fragment() {
                     shelves = mutableListOf()
                 )
                 viewModel.addNewWarehouse(newWarehouse)
+
+                dialog.dismiss()
             }
-            .setNegativeButton("Abbrechen", null)
-            .show()
+        }
     }
 
     private fun showAddElementChoiceDialog() {
-        val options = arrayOf("Regal hinzufügen", "Stütze (Infrastruktur) hinzufügen")
+        val options =
+            arrayOf(getString(R.string.add_shelf), getString(R.string.add_pillar), getString(R.string.add_wall))
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Element hinzufügen")
+            .setTitle(getString(R.string.add_element_title))
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> showAddShelfTypeDialog()
                     1 -> addDefaultPillar()
+                    2 -> addDefaultWall()
                 }
             }
-            .setNegativeButton("Abbrechen", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
+    }
+
+    private fun addDefaultWall() {
+        val currentWarehouse =
+            viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value) ?: return
+
+        viewModel.saveStateForUndo(currentWarehouse)
+
+        val centerX = binding.warehouseMapView.width / 2f
+        val centerY = binding.warehouseMapView.height / 2f
+
+        val startPoint = PointF(centerX - 150f, centerY)
+        val endPoint = PointF(centerX + 150f, centerY)
+
+        val newWall = Wall(startPoint, endPoint)
+
+        currentWarehouse.walls.add(newWall)
+
+        binding.warehouseMapView.setWarehouseData(currentWarehouse)
+        viewModel.saveWarehouseToFirestore(currentWarehouse)
     }
 
     //tmp, more types of shelf
     private fun showAddShelfTypeDialog() {
-        val currentWarehouse = viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value) ?: return
+        val currentWarehouse =
+            viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value) ?: return
 
         val shelfTypes = arrayOf(
-            "Standard-Regal (5 Spalten x 4 Reihen)",
-            "Kompakt-Regal (2 Spalten x 2 Reihen)",
-            "Großes Lagerregal (6 Spalten x 6 Reihen)"
+            getString(R.string.std_shelf),
+            getString(R.string.small_shelf),
+            getString(R.string.big_shelf)
         )
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Regal-Typ auswählen")
+            .setTitle(getString(R.string.choose_shelf_typ))
             .setItems(shelfTypes) { _, which ->
                 val (cols, rows) = when (which) {
                     0 -> Pair(5, 4)
@@ -217,7 +307,7 @@ class WarehouseFragment : Fragment() {
                     else -> Pair(4, 4)
                 }
 
-                val newShelfName = "Regal ${currentWarehouse.shelves.size + 1}"
+                val newShelfName = "${getString(R.string.shelf)} ${currentWarehouse.shelves.size + 1}"
                 val newShelf = Shelf(
                     name = newShelfName,
                     topLeft = PointF(100f, 100f),
@@ -233,13 +323,14 @@ class WarehouseFragment : Fragment() {
                 binding.warehouseMapView.setWarehouseData(currentWarehouse)
                 viewModel.saveWarehouseToFirestore(currentWarehouse)
             }
-            .setNegativeButton("Abbrechen", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
     //tmp, form?
     private fun addDefaultPillar() {
-        val currentWarehouse = viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value) ?: return
+        val currentWarehouse =
+            viewModel.warehouses.value.getOrNull(viewModel.currentIndex.value) ?: return
 
         val centerX = binding.warehouseMapView.width / 2f
         val centerY = binding.warehouseMapView.height / 2f

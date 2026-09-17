@@ -22,7 +22,7 @@
         <!--    android:title="@string/store_title"/>-->
         <item
             android:id="@+id/nav_warehouse"
-            android:icon="@drawable/ic_baseline_inventory_24"
+            android:icon="@drawable/outline_warehouse_24"
             android:title="@string/warehouse"/>
         <item
             android:id="@+id/nav_suggest_users"
