@@ -144,10 +144,16 @@ class WarehouseViewModel @Inject constructor(
             }.toMutableList(),
             pillars = warehouse.pillars.map { pillar ->
                 pillar.copy(position = PointF(pillar.position.x, pillar.position.y))
+            }.toMutableList(),
+            walls = warehouse.walls.map {wall ->
+                wall.copy(start = PointF(wall.start.x, wall.start.y), end = PointF(wall.end.x, wall.end.y))
             }.toMutableList()
         )
 
         undoStack.add(warehouseCopy)
+        if (undoStack.size > 10){
+            undoStack.removeAt(0)
+        }
         redoStack.clear()
     }
 
@@ -156,6 +162,9 @@ class WarehouseViewModel @Inject constructor(
         if (undoStack.isNotEmpty()) {
             val currentCopy = createDeepCopy(currentWarehouse)
             redoStack.add(currentCopy)
+            if (undoStack.size > 10){
+                undoStack.removeAt(0)
+            }
 
             val previousState = undoStack.removeAt(undoStack.size - 1)
             updateWarehouseState(previousState)
@@ -196,6 +205,9 @@ class WarehouseViewModel @Inject constructor(
             }.toMutableList(),
             pillars = warehouse.pillars.map { pillar ->
                 pillar.copy(position = PointF(pillar.position.x, pillar.position.y))
+            }.toMutableList(),
+            walls = warehouse.walls.map {wall ->
+                wall.copy(start = PointF(wall.start.x, wall.start.y), end = PointF(wall.end.x, wall.end.y))
             }.toMutableList()
         )
     }

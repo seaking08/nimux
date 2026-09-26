@@ -448,4 +448,9 @@
     <string name="logged_in">Eingeloggt als</string>
     <string name="with_role">Mit der Rolle</string>
     <string name="data_from_tenant">und mit Daten aus Tenant</string>
+    <string name="shelf_name">Regalname</string>
+    <string name="shelf_column">Spalten (Breite)</string>
+    <string name="shelf_row">Reihen (Höhe)</string>
+    <string name="empty_box_title">Leere Box</string>
+    <string name="door">Türe</string>
 </resources>

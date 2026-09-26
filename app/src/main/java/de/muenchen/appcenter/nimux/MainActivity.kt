@@ -48,9 +48,9 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.sqrt
 
-//Todo: Icons mehr, Geld Globale Einstellung ja/nein, Rolle/Benennung (Gruppenführer, Kleiderwart ...)
-//Todo: Aufteilung Produkt (Tack pro Produkt) --> Kategorie Klickeffizient, auch für Benutzer?
-//Todo: Warehouse System
+//Todo: Bugfix ohne Internet, Bugfix Übersetzung nicht vorhanden
+//Todo: Settingsrework -->1 Geld Feature nur für admin
+//Todo: Warehouse System in Kombination mit Produkt Anzahl, Ausbuchen,...
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {

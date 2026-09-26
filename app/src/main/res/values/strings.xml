@@ -488,4 +488,9 @@
     <string name="logged_in">Logged in as</string>
     <string name="with_role">with role</string>
     <string name="data_from_tenant">and data from tenant</string>
+    <string name="shelf_name">Shelf Name</string>
+    <string name="shelf_column">Columns (width)</string>
+    <string name="shelf_row">Rows (height)</string>
+    <string name="empty_box_title">Empty Box</string>
+    <string name="door">Door</string>
 </resources>

@@ -5,11 +5,14 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import androidx.core.content.ContextCompat.getString
+import android.content.Context
+import de.muenchen.appcenter.nimux.R
 import de.muenchen.appcenter.nimux.model.warehouse.DockOrientation
 import de.muenchen.appcenter.nimux.model.warehouse.Warehouse
 import de.muenchen.appcenter.nimux.model.warehouse.Shelf
 
-class WarehouseRenderer {
+class WarehouseRenderer(private val context: Context) {
     // --- PAINTS ---
     private val edgeHandlePaint = Paint().apply { color = Color.YELLOW; style = Paint.Style.FILL }
     private val wallPaint = Paint().apply { color = Color.DKGRAY; style = Paint.Style.STROKE; strokeWidth = 12f }
@@ -67,7 +70,7 @@ class WarehouseRenderer {
         val cx = x + dockWidth / 2f
         val cy = y + dockHeight / 2f
         if (isVertical) canvas.rotate(90f, cx, cy)
-        canvas.drawText("Türe", cx, cy + 10f, textPaint)
+        canvas.drawText(getString(context, R.string.door), cx, cy + 10f, textPaint)
         canvas.restore()
     }
 

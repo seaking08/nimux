@@ -8,7 +8,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Regal-Name"
+        android:hint="@string/shelf_name"
         android:layout_marginBottom="16dp"
         style="?attr/textInputOutlinedStyle">
 
@@ -22,7 +22,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Spalten (Breite)"
+        android:hint="@string/shelf_column"
         android:layout_marginBottom="16dp"
         style="?attr/textInputOutlinedStyle">
 
@@ -33,11 +33,10 @@
             android:inputType="number" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Reihenanzahl -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Reihen (Höhe)"
+        android:hint="@string/shelf_row"
         style="?attr/textInputOutlinedStyle">
 
         <com.google.android.material.textfield.TextInputEditText

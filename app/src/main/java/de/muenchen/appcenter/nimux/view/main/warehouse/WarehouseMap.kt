@@ -17,7 +17,7 @@ class WarehouseMap @JvmOverloads constructor(
     enum class WallNode { START, END }
 
     private val state = WarehouseState()
-    private val renderer = WarehouseRenderer()
+    private val renderer = WarehouseRenderer(context)
     private val touchHandler = WarehouseTouchHandler(this, state, renderer)
 
     var isEditMode: Boolean

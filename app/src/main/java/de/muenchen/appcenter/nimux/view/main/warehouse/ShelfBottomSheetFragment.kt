@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.content.ClipData
+import androidx.core.content.ContextCompat.getString
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -113,6 +114,7 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
                     is Box -> {
                         showEditBoxDialog(clickedItem)
                     }
+
                     is LooseProduct -> {
                         showProductSelectionDialog(
                             title = getString(R.string.change_loose_product),
@@ -184,16 +186,22 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
 
     private fun showEditBoxDialog(box: Box) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_edit_box, null)
-        val btnAdd = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_add_product)
+        val btnAdd =
+            dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_add_product)
         val recyclerViewProducts = dialogView.findViewById<RecyclerView>(R.id.rv_box_products)
 
-        recyclerViewProducts.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        recyclerViewProducts.layoutManager =
+            androidx.recyclerview.widget.LinearLayoutManager(requireContext())
 
         //function to update intern dialog list
         fun updateDialogList(dialog: androidx.appcompat.app.AlertDialog) {
             val adapter = object : RecyclerView.Adapter<BoxProductViewHolder>() {
-                override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BoxProductViewHolder {
-                    val v = LayoutInflater.from(parent.context).inflate(R.layout.item_dialog_product, parent, false)
+                override fun onCreateViewHolder(
+                    parent: ViewGroup,
+                    viewType: Int
+                ): BoxProductViewHolder {
+                    val v = LayoutInflater.from(parent.context)
+                        .inflate(R.layout.item_dialog_product, parent, false)
                     return BoxProductViewHolder(v)
                 }
 
@@ -251,12 +259,29 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
             } else {
                 getString(R.string.empty_box)
             }
+
             is LooseProduct -> "${getString(R.string.loose_product)}:\n ${item.product.name}"
         }
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)
             .setMessage(message)
+            .setNegativeButton(getString(R.string.edit)) { _, _ ->
+                when (item) {
+                    is Box -> showEditBoxDialog(item)
+                    else -> {
+                        showProductSelectionDialog(
+                            title = getString(R.string.change_loose_product),
+                            allProducts = allProducts
+                        ) { selectedProduct ->
+                            val newLooseProduct =
+                                LooseProduct(row = item.row, column = item.column, product = selectedProduct)
+                            (selectedShelf?.items as? MutableList)?.add(newLooseProduct)
+                            refreshGrid()
+                        }
+                    }
+                }
+            }
             .setPositiveButton(getString(R.string.close), null)
             .show()
     }
@@ -275,7 +300,8 @@ class ShelfBottomSheetFragment() : BottomSheetDialogFragment() {
                     title = getString(R.string.choose_loose_product),
                     allProducts = allProducts
                 ) { selectedProduct ->
-                    val newLooseProduct = LooseProduct(row = row, column = col, product = selectedProduct)
+                    val newLooseProduct =
+                        LooseProduct(row = row, column = col, product = selectedProduct)
                     (selectedShelf?.items as? MutableList)?.add(newLooseProduct)
                     refreshGrid()
                 }
@@ -327,7 +353,8 @@ class ShelfItemGridAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_box_grid, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_box_grid, parent, false)
         return ViewHolder(view)
     }
 
@@ -350,15 +377,31 @@ class ShelfItemGridAdapter(
                 true
             }
 
-            val boxColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimaryContainer, Color.BLUE)
-            val looseProductColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorTertiaryContainer, Color.GREEN)
+            val boxColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorPrimaryContainer,
+                Color.BLUE
+            )
+            val looseProductColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorTertiaryContainer,
+                Color.GREEN
+            )
 
             when (item) {
                 is Box -> {
                     holder.card.setCardBackgroundColor(boxColor)
-                    holder.ivIcon.setImageDrawable(drawIcon(context, "cmd_package_variant_closed", 24))
-                    holder.tvContents.text = if (item.products.isNotEmpty()) item.products.joinToString(", ") { it.name } else "Leere Box"
+                    holder.ivIcon.setImageDrawable(
+                        drawIcon(
+                            context,
+                            "cmd_package_variant_closed",
+                            24
+                        )
+                    )
+                    holder.tvContents.text =
+                        if (item.products.isNotEmpty()) item.products.joinToString(", ") { it.name } else getString(context, R.string.empty_box_title)
                 }
+
                 is LooseProduct -> {
                     holder.card.setCardBackgroundColor(looseProductColor)
                     var iconName = iconMap[item.product.productIcon]
@@ -368,7 +411,11 @@ class ShelfItemGridAdapter(
                 }
             }
         } else {
-            val emptyColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurfaceVariant, Color.LTGRAY)
+            val emptyColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorSurfaceVariant,
+                Color.LTGRAY
+            )
             holder.card.setCardBackgroundColor(emptyColor)
             holder.ivIcon.visibility = View.GONE
             holder.tvContents.text = ""
@@ -404,10 +451,12 @@ class ShelfItemGridAdapter(
                     holder.card.alpha = 0.5f
                     true
                 }
+
                 DragEvent.ACTION_DRAG_EXITED -> {
                     holder.card.alpha = 1.0f
                     true
                 }
+
                 DragEvent.ACTION_DROP -> {
                     holder.card.alpha = 1.0f
                     val fromPosition = event.localState as? Int
@@ -418,10 +467,12 @@ class ShelfItemGridAdapter(
                     }
                     true
                 }
+
                 DragEvent.ACTION_DRAG_ENDED -> {
                     holder.card.alpha = 1.0f
                     true
                 }
+
                 else -> false
             }
         }
