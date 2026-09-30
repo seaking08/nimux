@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group
-        android:id="@+id/action_group"
-        android:checkableBehavior="single">
+    <group android:checkableBehavior="all">
         <item
-            android:id="@+id/nav_home"
-            android:icon="@drawable/ic_round_add_shopping_cart_24"
-            android:title="@string/menu_home" />
+            android:id="@+id/nav_hub"
+            android:icon="@drawable/outline_hub_24"
+            android:title="Hub" />
         <item
             android:id="@+id/nav_overview"
             android:icon="@drawable/ic_round_format_list_bulleted_24"
@@ -16,29 +14,51 @@
             android:id="@+id/nav_statistics"
             android:icon="@drawable/ic_round_trending_up_24"
             android:title="@string/statistics" />
-        <!--<item-->
-        <!--    android:id="@+id/nav_user_store"-->
-        <!--    android:icon="@drawable/ic_round_store_24"-->
-        <!--    android:title="@string/store_title"/>-->
         <item
             android:id="@+id/nav_warehouse"
             android:icon="@drawable/outline_warehouse_24"
-            android:title="@string/warehouse"/>
-        <item
-            android:id="@+id/nav_suggest_users"
-            android:icon="@drawable/ic_round_person_add_24"
-            android:title="@string/suggest_users_title" />
-        <item
-            android:id="@+id/nav_manage_stuff"
-            android:icon="@drawable/ic_baseline_admin_panel_settings_24"
-            android:title="@string/manage_menu_title" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_round_settings_24"
-            android:title="@string/settings" />
-        <!--        <item-->
-        <!--            android:id="@+id/nav_logout"-->
-        <!--            android:icon="@drawable/ic_log_out_icon_128821"-->
-        <!--            android:title="@string/sign_out" />-->
+            android:title="@string/warehouse" />
     </group>
+
+    <item
+        android:id="@+id/category_admin"
+        android:title="Verwaltung">
+        <menu>
+            <item
+                android:id="@+id/nav_suggest_users"
+                android:checkable="true"
+                android:icon="@drawable/ic_round_person_add_24"
+                android:title="@string/suggest_users_title" />
+            <item
+                android:id="@+id/nav_manage_stuff"
+                android:checkable="true"
+                android:icon="@drawable/ic_baseline_admin_panel_settings_24"
+                android:title="@string/manage_menu_title" />
+            <item
+                android:id="@+id/nav_help"
+                android:icon="@drawable/ic_round_help_outline_24"
+                android:title="@string/help_action_title" />
+            <item
+                android:id="@+id/nav_feedback"
+                android:icon="@drawable/ic_baseline_feedback_24"
+                android:title="@string/feedback"/>
+        </menu>
+    </item>
+
+    <item android:id="@+id/category_personalisation"
+        android:title="Personalisierung">
+        <menu>
+            <item
+                android:id="@+id/nav_user_store"
+                android:checkable="true"
+                android:icon="@drawable/ic_round_store_24"
+                android:title="@string/store_title"
+                />
+            <item
+                android:id="@+id/nav_settings"
+                android:checkable="true"
+                android:icon="@drawable/ic_round_settings_24"
+                android:title="@string/settings" />
+        </menu>
+    </item>
 </menu>

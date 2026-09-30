@@ -524,6 +524,20 @@
             app:destination="@id/helpDetailFragment" />
     </fragment>
     <fragment
+        android:id="@+id/nav_hub"
+        android:name="de.muenchen.appcenter.nimux.view.main.hub.HubFragment"
+        android:label="Hub"
+        tools:layout="@layout/hub_fragment"/>
+    <fragment
+        android:id="@+id/nav_help"
+        android:name="de.muenchen.appcenter.nimux.view.main.help.HelpFragment"
+        android:label="@string/help_action_title"
+        tools:layout="@layout/fragment_help">
+        <action
+            android:id="@+id/action_helpFragment_to_helpDetailFragment"
+            app:destination="@id/helpDetailFragment" />
+    </fragment>
+    <fragment
         android:id="@+id/ausgebenConfirmFragment"
         android:name="de.muenchen.appcenter.nimux.view.main.specialorder.DonationConfirmFragment"
         android:label="@string/ausgeben_confirm_nav_label"

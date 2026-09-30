@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Primäre Ziele -->
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_hub"
+            android:icon="@drawable/outline_hub_24"
+            android:title="Hub" />
+        <item
+            android:id="@+id/nav_overview"
+            android:icon="@drawable/ic_round_format_list_bulleted_24"
+            android:title="@string/overview" />
+        <item
+            android:id="@+id/nav_statistics"
+            android:icon="@drawable/ic_round_trending_up_24"
+            android:title="@string/statistics" />
+        <item
+            android:id="@+id/nav_warehouse"
+            android:icon="@drawable/outline_warehouse_24"
+            android:title="@string/warehouse"/>
+    </group>
+
+    <!-- Sekundäre Ziele -->
+    <item android:title="Verwaltung">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_suggest_users"
+                    android:icon="@drawable/ic_round_person_add_24"
+                    android:title="@string/suggest_users_title" />
+                <item
+                    android:id="@+id/nav_manage_stuff"
+                    android:icon="@drawable/ic_baseline_admin_panel_settings_24"
+                    android:title="@string/manage_menu_title" />
+                <item
+                    android:id="@+id/nav_help"
+                    android:icon="@drawable/ic_round_help_outline_24"
+                    android:title="@string/help_action_title" />
+                <item
+                    android:id="@+id/nav_feedback"
+                    android:icon="@drawable/ic_baseline_feedback_24"
+                    android:title="@string/feedback"/>
+            </group>
+        </menu>
+    </item>
+
+    <item android:title="Personalisierung">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_user_store"
+                    android:icon="@drawable/ic_round_store_24"
+                    android:title="@string/store_title"
+                    />
+                <item
+                    android:id="@+id/nav_settings"
+                    android:icon="@drawable/ic_round_settings_24"
+                    android:title="@string/settings" />
+            </group>
+        </menu>
+    </item>
+</menu>

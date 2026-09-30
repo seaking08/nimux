@@ -4,11 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -17,6 +21,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.get
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -28,6 +33,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.android.material.transition.platform.MaterialFadeThrough
@@ -70,6 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         val selectedColor = sharedPrefs.getString(systemColorPrefKey, "default")
+        isRailExpanded = savedInstanceState?.getBoolean("rail_expanded") ?: false
 
         when (selectedColor) {
             "green" -> setTheme(R.style.AppTheme_Green)
@@ -82,7 +89,8 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val selectedTheme = sharedPrefs.getInt(systemThemePrefKey, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        val selectedTheme =
+            sharedPrefs.getInt(systemThemePrefKey, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         AppCompatDelegate.setDefaultNightMode(selectedTheme)
 
         setContentView(R.layout.activity_main)
@@ -139,11 +147,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val isLoggedIn =
-            sessionManager.getTenantId() != null // user is logged in if tenant id is set
+        //val isLoggedIn =
+        //    sessionManager.getTenantId() != null // user is logged in if tenant id is set
 
-        menu.findItem(R.id.menu_action_help)?.isVisible = isLoggedIn
-        menu.findItem(R.id.menu_action_feedback)?.isVisible = isLoggedIn
+        //menu.findItem(R.id.menu_action_help)?.isVisible = isLoggedIn
+        //menu.findItem(R.id.menu_action_feedback)?.isVisible = isLoggedIn
 
         return super.onPrepareOptionsMenu(menu)
     }
@@ -156,13 +164,20 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
 
-            R.id.menu_action_help -> {
-                navController.navigate(R.id.helpFragment)
-            }
+            //R.id.menu_action_help -> {
+            //    navController.navigate(R.id.helpFragment)
+            //}
 
-            R.id.menu_action_feedback -> navController.navigate(R.id.nav_feedback)
+            // R.id.menu_action_feedback -> navController.navigate(R.id.nav_feedback)
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private var isRailExpanded = false
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("rail_expanded", isRailExpanded)
     }
 
     @SuppressLint("CutPasteId")
@@ -175,118 +190,186 @@ class MainActivity : AppCompatActivity() {
             // 6.5inch device or bigger
             //val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
             val navGraph = navController.navInflater.inflate(R.navigation.mobile_navigation)
-                if (PreferenceManager.getDefaultSharedPreferences(this)
-                        .getBoolean(faceRecognitionPrefKey, false)
-                ) {
-                    navGraph.setStartDestination(R.id.nav_home_auto)
-                } else navGraph.setStartDestination(R.id.nav_home_manual)
+            if (PreferenceManager.getDefaultSharedPreferences(this)
+                    .getBoolean(faceRecognitionPrefKey, false)
+            ) {
+                navGraph.setStartDestination(R.id.nav_home_auto)
+            } else navGraph.setStartDestination(R.id.nav_home_manual)
 
             navController.graph = navGraph
 
-            appBarConfiguration = AppBarConfiguration(
+            val appBarConfiguration = AppBarConfiguration(
                 setOf(
                     R.id.nav_home_auto,
                     R.id.nav_home_manual,
                     R.id.nav_overview,
                     R.id.nav_statistics,
-                    R.id.nav_warehouse,
+                    R.id.nav_user_store,
                     R.id.nav_manage_stuff,
-                    R.id.nav_suggest_users
+                    R.id.nav_suggest_users,
+                    R.id.nav_user_store,
+                    R.id.nav_help,
+                    R.id.nav_feedback,
+                    R.id.nav_hub,
+                    R.id.nav_warehouse
                 )
             )
 
             setupActionBarWithNavController(navController, appBarConfiguration)
-
             val navRail = findViewById<NavigationRailView>(R.id.nav_view)
-            navRail.setOnItemSelectedListener { menuItem ->
-                val navBuilder = NavOptions.Builder()
-                val options = navBuilder.setPopUpTo(
-                    navController.graph.id,
-                    inclusive = true,
-                    saveState = false
-                ).build()
-                when (menuItem.itemId) {
-                    R.id.nav_home -> {
+            
+            val railHeader = navRail.getHeaderView()!!
+            val btnMenu = railHeader.findViewById<ImageButton>(R.id.rail_menu_button)
+            val fabBuchen = railHeader.findViewById<ExtendedFloatingActionButton>(R.id.fab_buchen)
+            val logoText = railHeader.findViewById<TextView>(R.id.rail_logo_text)
 
-                        val sharedPref =
-                            PreferenceManager.getDefaultSharedPreferences(this)
+            val railDelayMs = 80L
+            val textFadeMs = 0L
+            var pendingAction: Runnable? = null
 
-                        val faceRecognitionEnabled =
-                            sharedPref.getBoolean(faceRecognitionPrefKey, false)
+            var lastMenuClickTime = 0L
+            val menuClickCooldown = 250L
 
-                        val destination = if (faceRecognitionEnabled) {
-                            R.id.nav_home_auto
-                        } else {
-                            R.id.nav_home_manual
-                        }
+            fun applyRailState(expanded: Boolean) {
+                pendingAction?.let { navRail.removeCallbacks(it) }
+                logoText.animate().cancel()
 
-                        if (navController.currentDestination?.id != destination) {
-                            navController.navigate(destination, null, options)
-                        }
+                val parentLayout = navRail.parent as? ViewGroup
+                parentLayout?.let {
+                    val fastTransition = AutoTransition().apply {
+                        duration = 200L
+                        interpolator = FastOutSlowInInterpolator()
                     }
-
-                    R.id.nav_overview -> {
-                        navController.navigate(R.id.nav_overview, null, options)
-                    }
-
-                    R.id.nav_statistics -> {
-                        navController.navigate(R.id.nav_statistics, null, options)
-                    }
-
-                    R.id.nav_manage_stuff -> {
-                        navController.navigate(R.id.nav_manage_stuff, null, options)
-                    }
-
-                    R.id.nav_settings -> {
-                        navController.navigate(R.id.nav_settings)
-                    }
-
-                    R.id.nav_warehouse -> {
-                        navController.navigate(R.id.nav_warehouse, null, options)
-                    }
-
-                    R.id.nav_suggest_users -> {
-                        navController.navigate(R.id.nav_suggest_users, null, options)
-                    }
+                    TransitionManager.beginDelayedTransition(it, fastTransition)
                 }
+
+                if (expanded) {
+                    logoText.visibility = View.VISIBLE
+                    btnMenu.setImageResource(R.drawable.outline_menu_open_24)
+
+                    navRail.expand()
+                    fabBuchen.extend()
+
+                    logoText.animate()
+                        .setStartDelay(100L)
+                        .alpha(1f)
+                        .setDuration(textFadeMs)
+                        .setInterpolator(FastOutSlowInInterpolator())
+                        .start()
+
+                } else {
+                    btnMenu.setImageResource(R.drawable.ic_baseline_menu_24)
+
+                    logoText.animate()
+                        .setStartDelay(0L)
+                        .alpha(0f)
+                        .setDuration(textFadeMs / 2)
+                        .setInterpolator(FastOutLinearInInterpolator())
+                        .withEndAction {
+                            logoText.visibility = View.GONE
+                        }
+                        .start()
+
+                    navRail.collapse()
+
+                    pendingAction = Runnable { fabBuchen.shrink() }
+                    navRail.postDelayed(pendingAction, railDelayMs)
+                }
+
+                isRailExpanded = expanded
+            }
+
+            fabBuchen.post { applyRailState(isRailExpanded) }
+
+            applyRailState(isRailExpanded)
+
+            btnMenu.setOnClickListener {
+                val currentTime = android.os.SystemClock.elapsedRealtime()
+                if (currentTime - lastMenuClickTime > menuClickCooldown) {
+                    lastMenuClickTime = currentTime
+                    applyRailState(!isRailExpanded)
+                }
+            }
+
+            fabBuchen.setOnClickListener {
+                val sharedPref =
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                val faceRecognitionEnabled =
+                    sharedPref.getBoolean(faceRecognitionPrefKey, false)
+                val destination =
+                    if (faceRecognitionEnabled) R.id.nav_home_auto else R.id.nav_home_manual
+                val options = NavOptions.Builder()
+                    .setPopUpTo(navController.graph.id, true, false)
+                    .build()
+
+                if (navController.currentDestination?.id != destination) {
+                    navController.navigate(destination, null, options)
+                }
+            }
+
+            fun syncChecked(menu: Menu, targetId: Int) {
+                for (i in 0 until menu.size()) {
+                    val m = menu.getItem(i)
+                    m.subMenu?.let { syncChecked(it, targetId) }
+                    if (m.isCheckable) m.isChecked = (m.itemId == targetId)
+                }
+            }
+
+            navRail.setOnItemSelectedListener { item ->
+                val options = if (item.itemId == R.id.nav_settings) null
+                else NavOptions.Builder()
+                    .setPopUpTo(navController.graph.id, inclusive = true, saveState = false)
+                    .build()
+
+                if (navController.currentDestination?.id != item.itemId) {
+                    navController.navigate(item.itemId, null, options)
+                }
+                navRail.post { syncChecked(navRail.menu, item.itemId) }
                 true
             }
 
-            navController.addOnDestinationChangedListener { _, destination, _ ->
-                if (destination.id == R.id.nav_home_auto)
-                    navRail.menu[0].isChecked = true
-                if (destination.id == R.id.nav_home_manual)
-                    navRail.menu[0].isChecked = true
-                if (destination.id == R.id.nav_overview)
-                    navRail.menu[1].isChecked = true
-                if (destination.id == R.id.nav_statistics)
-                    navRail.menu[2].isChecked = true
-                if (destination.id == R.id.nav_warehouse)
-                    navRail.menu[3].isChecked = true
-                if (destination.id == R.id.nav_suggest_users)
-                    navRail.menu[4].isChecked = true
-                if (destination.id == R.id.nav_manage_stuff)
-                    navRail.menu[5].isChecked = true
-                if (destination.id == R.id.nav_settings)
-                    navRail.menu[6].isChecked = true
-                timerRestart()
+            //toDo: Rework concept
+            val noSelectionDestinations = setOf(R.id.nav_home_auto, R.id.nav_home_manual)
+            val parentItemFor = mapOf(
+                R.id.manageUsersFragment to R.id.nav_manage_stuff,
+                R.id.manageProductsFragment to R.id.nav_manage_stuff,
+                R.id.suggestedUsersFragment to R.id.nav_suggest_users,
+                R.id.suggUserPasswordFragment to R.id.nav_suggest_users,
+                R.id.storeUserFragment to R.id.nav_user_store,
+                R.id.helpFragment to R.id.nav_help,
+                R.id.nav_feedback to R.id.nav_feedback,
+                R.id.nav_hub to R.id.nav_hub
+            )
+
+            fun updateRailSelection(destinationId: Int) {
+                when {
+                    destinationId in noSelectionDestinations ->
+                        navRail.post { syncChecked(navRail.menu, -1) }
+
+                    navRail.menu.findItem(destinationId) != null ->
+                        navRail.post { syncChecked(navRail.menu, destinationId) }
+
+                    parentItemFor.containsKey(destinationId) ->
+                        navRail.post {
+                            syncChecked(
+                                navRail.menu,
+                                parentItemFor.getValue(destinationId)
+                            )
+                        }
+
+                }
             }
 
+            navController.addOnDestinationChangedListener { _, destination, _ ->
+                timerRestart()
+                updateRailSelection(destination.id)
+            }
+
+            navController.currentDestination?.id?.let { updateRailSelection(it) }
         } else {
             // smaller device
             val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
             val navView: NavigationView = findViewById(R.id.nav_view)
-            val navHostFragment =
-                supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-            navController = navHostFragment.navController
-            val navGraph = navController.navInflater.inflate(R.navigation.mobile_navigation)
-
-
-            navGraph.setStartDestination(R.id.suggUserPasswordFragment)
-
-
-            navController.graph = navGraph
-
             appBarConfiguration = AppBarConfiguration(
                 setOf(
                     R.id.suggestedUsersFragment,
@@ -316,11 +399,13 @@ class MainActivity : AppCompatActivity() {
         db.enableNetwork()
     }
 
-
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment)
-        hideKeyboard(this)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        if (::appBarConfiguration.isInitialized) {
+            val navController = findNavController(R.id.nav_host_fragment)
+            hideKeyboard(this)
+            return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        }
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
     override fun onStart() {
